@@ -48,3 +48,12 @@ func TestExample(t *testing.T) {
 		Cb(func(response *http.Response) { /* do something */ })
 }
 ```
+
+## Contribution Guidelines
+- Provide your fix/new feature
+- Write tests
+- Make sure all tests are passing
+- Send Pull Request
+
+# License
+*MIT*
