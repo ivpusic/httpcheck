@@ -60,7 +60,7 @@ func TestNew(t *testing.T) {
 
 func TestTest(t *testing.T) {
 	checker := makeTestChecker(t)
-	checker.Test("GET", "http://localhost:3000/some")
+	checker.Test("GET", "/some")
 
 	assert.NotNil(t, checker.request)
 	assert.Exactly(t, "GET", checker.request.Method)
@@ -81,7 +81,7 @@ func TestRequest(t *testing.T) {
 
 func TestWithHeader(t *testing.T) {
 	checker := makeTestChecker(t)
-	checker.Test("GET", "http://localhost:3000/some")
+	checker.Test("GET", "/some")
 
 	checker.WithHeader("key", "value")
 
@@ -91,7 +91,7 @@ func TestWithHeader(t *testing.T) {
 
 func TestWithCookie(t *testing.T) {
 	checker := makeTestChecker(t)
-	checker.Test("GET", "http://localhost:3000/some")
+	checker.Test("GET", "/some")
 
 	checker.WithCookie("key", "value")
 
@@ -105,7 +105,7 @@ func TestWithCookie(t *testing.T) {
 
 func TestCheck(t *testing.T) {
 	checker := makeTestChecker(t)
-	checker.Test("GET", "http://localhost:3000/some")
+	checker.Test("GET", "/some")
 	checker.Check()
 
 	assert.NotNil(t, checker.response)
@@ -115,7 +115,7 @@ func TestCheck(t *testing.T) {
 func TestHasStatus(t *testing.T) {
 	mockT := new(testing.T)
 	checker := makeTestChecker(mockT)
-	checker.Test("GET", "http://localhost:3000/some")
+	checker.Test("GET", "/some")
 	checker.Check()
 
 	checker.HasStatus(202)
@@ -123,7 +123,7 @@ func TestHasStatus(t *testing.T) {
 
 	mockT = new(testing.T)
 	checker = makeTestChecker(mockT)
-	checker.Test("GET", "http://localhost:3000/some")
+	checker.Test("GET", "/some")
 	checker.Check()
 
 	checker.HasStatus(204)
@@ -133,7 +133,7 @@ func TestHasStatus(t *testing.T) {
 func TestHasHeader(t *testing.T) {
 	mockT := new(testing.T)
 	checker := makeTestChecker(mockT)
-	checker.Test("GET", "http://localhost:3000/some")
+	checker.Test("GET", "/some")
 	checker.Check()
 
 	checker.HasHeader("some", "header")
@@ -141,7 +141,7 @@ func TestHasHeader(t *testing.T) {
 
 	mockT = new(testing.T)
 	checker = makeTestChecker(mockT)
-	checker.Test("GET", "http://localhost:3000/some")
+	checker.Test("GET", "/some")
 	checker.Check()
 
 	checker.HasHeader("some", "unknown")
@@ -149,7 +149,7 @@ func TestHasHeader(t *testing.T) {
 
 	mockT = new(testing.T)
 	checker = makeTestChecker(mockT)
-	checker.Test("GET", "http://localhost:3000/some")
+	checker.Test("GET", "/some")
 	checker.Check()
 
 	checker.HasHeader("unknown", "header")
@@ -159,7 +159,7 @@ func TestHasHeader(t *testing.T) {
 func TestHasCookie(t *testing.T) {
 	mockT := new(testing.T)
 	checker := makeTestChecker(mockT)
-	checker.Test("GET", "http://localhost:3000/some")
+	checker.Test("GET", "/some")
 	checker.Check()
 
 	checker.HasCookie("some", "cookie")
@@ -167,7 +167,7 @@ func TestHasCookie(t *testing.T) {
 
 	mockT = new(testing.T)
 	checker = makeTestChecker(mockT)
-	checker.Test("GET", "http://localhost:3000/some")
+	checker.Test("GET", "/some")
 	checker.Check()
 
 	checker.HasCookie("some", "unknown")
@@ -175,7 +175,7 @@ func TestHasCookie(t *testing.T) {
 
 	mockT = new(testing.T)
 	checker = makeTestChecker(mockT)
-	checker.Test("GET", "http://localhost:3000/some")
+	checker.Test("GET", "/some")
 	checker.Check()
 
 	checker.HasCookie("unknown", "cookie")
@@ -185,7 +185,7 @@ func TestHasCookie(t *testing.T) {
 func TestHasJson(t *testing.T) {
 	mockT := new(testing.T)
 	checker := makeTestChecker(mockT)
-	checker.Test("GET", "http://localhost:3000/json")
+	checker.Test("GET", "/json")
 	checker.Check()
 
 	person := &testPerson{
@@ -206,7 +206,7 @@ func TestHasJson(t *testing.T) {
 func TestHasBody(t *testing.T) {
 	mockT := new(testing.T)
 	checker := makeTestChecker(mockT)
-	checker.Test("GET", "http://localhost:3000/byte")
+	checker.Test("GET", "/byte")
 	checker.Check()
 
 	checker.HasBody([]byte("hello world"))
@@ -215,7 +215,7 @@ func TestHasBody(t *testing.T) {
 func TestCb(t *testing.T) {
 	mockT := new(testing.T)
 	checker := makeTestChecker(mockT)
-	checker.Test("GET", "http://localhost:3000/json")
+	checker.Test("GET", "/json")
 	checker.Check()
 
 	called := false

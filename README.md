@@ -20,7 +20,7 @@ import (
 func TestExample(t *testing.T) {
 	checker := httpcheck.New(t, &testHandler{}, ":3000")
 
-	checker.Test("GET", "http://localhost:3000/some/url").
+	checker.Test("GET", "/some/url").
 		WithHeader("key", "value").
 		WithCookie("key", "value").
 		Check().
@@ -61,7 +61,7 @@ import (
 func TestExample(t *testing.T) {
 	checker := httpcheck.New(t, &testHandler{}, ":3000")
 
-	checker.Test("GET", "http://localhost:3000/some/url").
+	checker.Test("GET", "/some/url").
 		Check().
 		HasStatus(200).
 		HasBody([]byte("some body")).

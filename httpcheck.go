@@ -20,6 +20,7 @@ type (
 		server   *manners.GracefulServer
 		request  *http.Request
 		response *http.Response
+		prefix   string
 	}
 
 	Callback func(*http.Response)
@@ -31,11 +32,20 @@ var (
 
 func New(t *testing.T, handler http.Handler, addr string) *Checker {
 	logger.Level = golog.INFO
+	prefix := ""
+
+	addrParts := strings.Split(addr, ":")
+	if addrParts[0] == "" {
+		prefix = "http://localhost" + addr
+	} else {
+		prefix = "http://" + addr
+	}
 
 	instance := &Checker{
 		t:       t,
 		handler: handler,
 		addr:    addr,
+		prefix:  prefix,
 	}
 	instance.server = manners.NewServer()
 
@@ -71,11 +81,21 @@ func (c *Checker) TestRequest(request *http.Request) *Checker {
 // Prepare for testing some part of code which lives on provided path and method.
 func (c *Checker) Test(method, path string) *Checker {
 	method = strings.ToUpper(method)
-	request, err := http.NewRequest(method, path, nil)
+	request, err := http.NewRequest(method, c.prefix+path, nil)
 
 	assert.Nil(c.t, err, "Failed to make new request")
 
 	c.request = request
+	return c
+}
+
+// Final URL for request will be prefix+path.
+// Prefix can be something like "http://localhost:3000", and path can be "/some/path" for example.
+// Path is provided by user using "Test" method.
+// Library will try to figure out URL prefix automatically for you.
+// But in case that for your case is not the best, you can set prefix manually
+func (c *Checker) SetPrefix(prefix string) *Checker {
+	c.prefix = prefix
 	return c
 }
 
