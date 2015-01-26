@@ -1,4 +1,5 @@
 # httpcheck
+[![Build Status](https://travis-ci.org/ivpusic/httpcheck.svg?branch=master)](https://travis-ci.org/ivpusic/httpcheck)
 
 [supertest](https://github.com/tj/supertest) inspired library for testing HTTP servers.
 
@@ -6,6 +7,9 @@
 ```
 go get github.com/ivpusic/httpcheck
 ```
+
+## API Documentation
+[godoc](https://godoc.org/github.com/ivpusic/httpcheck)
 
 ## How to use?
 
