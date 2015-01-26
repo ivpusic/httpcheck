@@ -30,6 +30,8 @@ var (
 )
 
 func New(t *testing.T, handler http.Handler, port string) *Checker {
+	logger.Level = golog.INFO
+
 	instance := &Checker{
 		t:       t,
 		handler: handler,
@@ -40,17 +42,25 @@ func New(t *testing.T, handler http.Handler, port string) *Checker {
 	return instance
 }
 
+// Will run HTTP server
 func (c *Checker) run() {
-	logger.Info("running")
+	logger.Debug("running server")
 	c.server.ListenAndServe(c.port, c.handler)
 }
 
+// Will stop HTTP server
 func (c *Checker) stop() {
-	logger.Info("stopping")
+	logger.Debug("stopping server")
 	c.server.Shutdown <- true
+	// todo: solve race condition
+	time.Sleep(1 * time.Millisecond)
 }
 
 // make request /////////////////////////////////////////////////
+
+// If you want to provide you custom http.Request instance, you can do it using this method
+// In this case internal http.Request instance won't be created, and passed instane will be used
+// for making request
 func (c *Checker) TestRequest(request *http.Request) *Checker {
 	assert.NotNil(c.t, request, "Request nil")
 
@@ -58,6 +68,7 @@ func (c *Checker) TestRequest(request *http.Request) *Checker {
 	return c
 }
 
+// Prepare for testing some part of code which lives on provided path and method.
 func (c *Checker) Test(method, path string) *Checker {
 	method = strings.ToUpper(method)
 	request, err := http.NewRequest(method, path, nil)
@@ -69,11 +80,14 @@ func (c *Checker) Test(method, path string) *Checker {
 }
 
 // headers ///////////////////////////////////////////////////////
+
+// Will put header on request
 func (c *Checker) WithHeader(key, value string) *Checker {
 	c.request.Header.Set(key, value)
 	return c
 }
 
+// Will check if response contains header on provided key with provided value
 func (c *Checker) HasHeader(key, expectedValue string) *Checker {
 	value := c.response.Header.Get(key)
 	assert.Exactly(c.t, expectedValue, value)
@@ -82,6 +96,8 @@ func (c *Checker) HasHeader(key, expectedValue string) *Checker {
 }
 
 // cookies ///////////////////////////////////////////////////////
+
+// Will put cookie on request
 func (c *Checker) HasCookie(key, expectedValue string) *Checker {
 	responseCookiesMap := cookiesToMap(c.response.Cookies())
 	cookieValue, ok := responseCookiesMap[key]
@@ -92,6 +108,7 @@ func (c *Checker) HasCookie(key, expectedValue string) *Checker {
 	return c
 }
 
+// Will ckeck if response contains cookie with provided key and value
 func (c *Checker) WithCookie(key, value string) *Checker {
 	c.request.AddCookie(&http.Cookie{
 		Name:  key,
@@ -102,12 +119,16 @@ func (c *Checker) WithCookie(key, value string) *Checker {
 }
 
 // status ////////////////////////////////////////////////////////
+
+// Will ckeck if response status is equal to provided
 func (c *Checker) HasStatus(status int) *Checker {
 	assert.Exactly(c.t, status, c.response.StatusCode)
 	return c
 }
 
 // json body /////////////////////////////////////////////////////
+
+// Will ckeck if body contains json with provided value
 func (c *Checker) HasJson(value interface{}) *Checker {
 	body, err := ioutil.ReadAll(c.response.Body)
 	assert.Nil(c.t, err)
@@ -120,6 +141,8 @@ func (c *Checker) HasJson(value interface{}) *Checker {
 }
 
 // body //////////////////////////////////////////////////////////
+
+// Will check if body contains provided []byte data
 func (c *Checker) HasBody(body []byte) *Checker {
 	responseBody, err := ioutil.ReadAll(c.response.Body)
 
@@ -129,6 +152,9 @@ func (c *Checker) HasBody(body []byte) *Checker {
 	return c
 }
 
+// Will make reqeust to built request object.
+// After request is made, it will save response object for future assertions
+// Responsibility of this method is also to start and stop HTTP server
 func (c *Checker) Check() *Checker {
 	// start server in new goroutine
 	go c.run()
@@ -150,6 +176,7 @@ func (c *Checker) Check() *Checker {
 	return c
 }
 
+// Will call provided callback function with current response
 func (c *Checker) Cb(cb Callback) {
 	cb(c.response)
 }
