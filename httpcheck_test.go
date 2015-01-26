@@ -83,3 +83,23 @@ func TestCheck(t *testing.T) {
 	assert.NotNil(t, checker.response)
 	assert.Exactly(t, 204, checker.response.StatusCode)
 }
+
+func TestHasStatusFailed(t *testing.T) {
+	mockT := new(testing.T)
+	checker := makeTestChecker(mockT)
+	checker.Test("GET", "http://localhost:3000/some")
+	checker.Check()
+
+	checker.HasStatus(202)
+	assert.True(t, mockT.Failed())
+}
+
+func TestHasStatusOk(t *testing.T) {
+	mockT := new(testing.T)
+	checker := makeTestChecker(mockT)
+	checker.Test("GET", "http://localhost:3000/some")
+	checker.Check()
+
+	checker.HasStatus(204)
+	assert.False(t, mockT.Failed())
+}
