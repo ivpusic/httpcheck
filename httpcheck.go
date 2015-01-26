@@ -99,11 +99,14 @@ func (c *Checker) HasHeader(key, expectedValue string) *Checker {
 
 // Will put cookie on request
 func (c *Checker) HasCookie(key, expectedValue string) *Checker {
-	responseCookiesMap := cookiesToMap(c.response.Cookies())
-	cookieValue, ok := responseCookiesMap[key]
-
-	assert.True(c.t, ok)
-	assert.Exactly(c.t, expectedValue, cookieValue)
+	found := false
+	for _, cookie := range c.response.Cookies() {
+		if cookie.Name == key && cookie.Value == expectedValue {
+			found = true
+			break
+		}
+	}
+	assert.True(c.t, found)
 
 	return c
 }
