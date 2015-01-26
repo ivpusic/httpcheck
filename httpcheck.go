@@ -16,7 +16,7 @@ type (
 	Checker struct {
 		t        *testing.T
 		handler  http.Handler
-		port     string
+		addr     string
 		server   *manners.GracefulServer
 		request  *http.Request
 		response *http.Response
@@ -29,13 +29,13 @@ var (
 	logger = golog.GetLogger("github.com/ivpusic/golog")
 )
 
-func New(t *testing.T, handler http.Handler, port string) *Checker {
+func New(t *testing.T, handler http.Handler, addr string) *Checker {
 	logger.Level = golog.INFO
 
 	instance := &Checker{
 		t:       t,
 		handler: handler,
-		port:    port,
+		addr:    addr,
 	}
 	instance.server = manners.NewServer()
 
@@ -45,7 +45,7 @@ func New(t *testing.T, handler http.Handler, port string) *Checker {
 // Will run HTTP server
 func (c *Checker) run() {
 	logger.Debug("running server")
-	c.server.ListenAndServe(c.port, c.handler)
+	c.server.ListenAndServe(c.addr, c.handler)
 }
 
 // Will stop HTTP server

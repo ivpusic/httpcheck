@@ -48,13 +48,13 @@ func makeTestChecker(t *testing.T) *Checker {
 
 func TestNew(t *testing.T) {
 	handler := &testHandler{}
-	port := ":3000"
-	checker := New(t, handler, port)
+	addr := ":3000"
+	checker := New(t, handler, addr)
 
 	assert.NotNil(t, checker)
 	assert.Exactly(t, t, checker.t)
 	assert.Exactly(t, handler, checker.handler)
-	assert.Exactly(t, port, checker.port)
+	assert.Exactly(t, addr, checker.addr)
 	assert.NotNil(t, checker.server)
 }
 
