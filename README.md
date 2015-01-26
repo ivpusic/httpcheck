@@ -11,8 +11,14 @@ go get github.com/ivpusic/httpcheck
 
 ### Basic example
 ```Go
+package main
+
+import (
+	"github.com/ivpusic/httpcheck"
+)
+
 func TestExample(t *testing.T) {
-	checker := New(t, &testHandler{}, ":3000")
+	checker := httpcheck.New(t, &testHandler{}, ":3000")
 
 	checker.Test("GET", "http://localhost:3000/some/url").
 		WithHeader("key", "value").
@@ -27,8 +33,15 @@ func TestExample(t *testing.T) {
 
 ### Provide ``*http.Request`` instance
 ```Go
+package main
+
+import (
+	"net/http"
+	"github.com/ivpusic/httpcheck"
+)
+
 func TestExample(t *testing.T) {
-	checker := New(t, &testHandler{}, ":3000")
+	checker := httpcheck.New(t, &testHandler{}, ":3000")
 
 	checker.TestRequest(&http.Request{ /* fields */ }).
 		Check().
@@ -38,8 +51,15 @@ func TestExample(t *testing.T) {
 
 ### Define callback
 ```Go
+package main
+
+import (
+	"net/http"
+	"github.com/ivpusic/httpcheck"
+)
+
 func TestExample(t *testing.T) {
-	checker := New(t, &testHandler{}, ":3000")
+	checker := httpcheck.New(t, &testHandler{}, ":3000")
 
 	checker.Test("GET", "http://localhost:3000/some/url").
 		Check().
