@@ -2,6 +2,7 @@ package httpcheck
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"github.com/braintree/manners"
 	"github.com/ivpusic/golog"
 	"github.com/stretchr/testify/assert"
@@ -157,6 +158,18 @@ func (c *Checker) HasJson(value interface{}) *Checker {
 	assert.Nil(c.t, err)
 
 	valueBytes, err := json.Marshal(value)
+	assert.Nil(c.t, err)
+	assert.Equal(c.t, string(valueBytes), string(body))
+
+	return c
+}
+
+// Will ckeck if body contains xml with provided value
+func (c *Checker) HasXml(value interface{}) *Checker {
+	body, err := ioutil.ReadAll(c.response.Body)
+	assert.Nil(c.t, err)
+
+	valueBytes, err := xml.Marshal(value)
 	assert.Nil(c.t, err)
 	assert.Equal(c.t, string(valueBytes), string(body))
 

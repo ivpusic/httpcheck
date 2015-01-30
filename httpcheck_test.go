@@ -2,6 +2,7 @@ package httpcheck
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"testing"
@@ -34,6 +35,19 @@ func (t *testHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
+		w.Write(body)
+
+	case "/xml":
+		body, err := xml.Marshal(testPerson{
+			Name: "Some",
+			Age:  30,
+		})
+
+		if err != nil {
+			panic(err)
+		}
+
+		w.Header().Set("Content-Type", "application/xml")
 		w.Write(body)
 	case "/byte":
 		w.Write([]byte("hello world"))
@@ -200,6 +214,27 @@ func TestHasJson(t *testing.T) {
 		Age:  30,
 	}
 	checker.HasJson(person)
+	assert.True(t, mockT.Failed())
+}
+
+func TestHasXml(t *testing.T) {
+	mockT := new(testing.T)
+	checker := makeTestChecker(mockT)
+	checker.Test("GET", "/xml")
+	checker.Check()
+
+	person := &testPerson{
+		Name: "Some",
+		Age:  30,
+	}
+	checker.HasXml(person)
+	assert.False(t, mockT.Failed())
+
+	person = &testPerson{
+		Name: "Unknown",
+		Age:  30,
+	}
+	checker.HasXml(person)
 	assert.True(t, mockT.Failed())
 }
 
