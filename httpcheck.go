@@ -28,7 +28,7 @@ type (
 )
 
 var (
-	logger = golog.GetLogger("github.com/ivpusic/golog")
+	logger = golog.GetLogger("github.com/ivpusic/httpcheck")
 )
 
 func New(t *testing.T, handler http.Handler, addr string) *Checker {

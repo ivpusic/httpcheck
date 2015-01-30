@@ -74,8 +74,8 @@ func TestExample(t *testing.T) {
 ```
 
 ## Contribution Guidelines
-- Provide your fix/new feature
-- Write tests
+- Implement fix/feature
+- Write tests for fix/feature
 - Make sure all tests are passing
 - Send Pull Request
 
