@@ -24,8 +24,7 @@ type (
 		request  *http.Request
 		response *http.Response
 		prefix   string
-		// whether cookies should be saved during multipli calls
-		persist bool
+		pcookies map[string]bool
 	}
 
 	Callback func(*http.Response)
@@ -56,17 +55,21 @@ func New(t *testing.T, handler http.Handler, addr string) *Checker {
 			Timeout: time.Duration(5 * time.Second),
 			Jar:     jar,
 		},
-		persist: false,
+		pcookies: map[string]bool{},
 	}
 	instance.server = manners.NewServer()
 
 	return instance
 }
 
-// Sets whether server-issued http cookies are saved between calls
-// Default: False
-func (c *Checker) SetPersistCookies(persist bool) {
-	c.persist = persist
+// enables a cookie to be preserved between requests
+func (c *Checker) PersistCookie(cookie string) {
+	c.pcookies[cookie] = true
+}
+
+// the specified cookie will not be preserved during requests anymore
+func (c *Checker) UnpersistCookie(cookie string) {
+	delete(c.pcookies, cookie)
 }
 
 // Will run HTTP server
@@ -211,11 +214,18 @@ func (c *Checker) Check() *Checker {
 	// start server in new goroutine
 	go c.run()
 
-	if !c.persist {
-		jar, _ := cookiejar.New(nil)
-		c.client.Jar = jar
+	newJar, _ := cookiejar.New(nil)
+
+	for name, _ := range c.pcookies {
+		for _, oldCookie := range c.client.Jar.Cookies(c.request.URL) {
+			if name == oldCookie.Name {
+				newJar.SetCookies(c.request.URL, []*http.Cookie{oldCookie})
+				break
+			}
+		}
 	}
 
+	c.client.Jar = newJar
 	response, err := c.client.Do(c.request)
 	assert.Nil(c.t, err, "Failed while making new request.", err)
 

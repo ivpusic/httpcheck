@@ -266,7 +266,8 @@ func TestCb(t *testing.T) {
 func TestCookies(t *testing.T) {
 	mockT := new(testing.T)
 	checker := makeTestChecker(mockT)
-	checker.SetPersistCookies(true)
+	checker.PersistCookie("some")
+
 	checker.Test("GET", "/some")
 	checker.Check()
 
@@ -283,7 +284,7 @@ func TestCookies(t *testing.T) {
 func TestCookiesDelete(t *testing.T) {
 	mockT := new(testing.T)
 	checker := makeTestChecker(mockT)
-	checker.SetPersistCookies(false)
+
 	checker.Test("GET", "/some")
 	checker.Check()
 
