@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
+	"net/http/cookiejar"
 	"strings"
 	"testing"
 	"time"
@@ -19,9 +20,11 @@ type (
 		handler  http.Handler
 		addr     string
 		server   *manners.GracefulServer
+		client   *http.Client
 		request  *http.Request
 		response *http.Response
 		prefix   string
+		pcookies map[string]bool
 	}
 
 	Callback func(*http.Response)
@@ -42,15 +45,31 @@ func New(t *testing.T, handler http.Handler, addr string) *Checker {
 		prefix = "http://" + addr
 	}
 
+	jar, _ := cookiejar.New(nil)
 	instance := &Checker{
 		t:       t,
 		handler: handler,
 		addr:    addr,
 		prefix:  prefix,
+		client: &http.Client{
+			Timeout: time.Duration(5 * time.Second),
+			Jar:     jar,
+		},
+		pcookies: map[string]bool{},
 	}
 	instance.server = manners.NewServer()
 
 	return instance
+}
+
+// enables a cookie to be preserved between requests
+func (c *Checker) PersistCookie(cookie string) {
+	c.pcookies[cookie] = true
+}
+
+// the specified cookie will not be preserved during requests anymore
+func (c *Checker) UnpersistCookie(cookie string) {
+	delete(c.pcookies, cookie)
 }
 
 // Will run HTTP server
@@ -121,7 +140,7 @@ func (c *Checker) HasHeader(key, expectedValue string) *Checker {
 // Will put cookie on request
 func (c *Checker) HasCookie(key, expectedValue string) *Checker {
 	found := false
-	for _, cookie := range c.response.Cookies() {
+	for _, cookie := range c.client.Jar.Cookies(c.request.URL) {
 		if cookie.Name == key && cookie.Value == expectedValue {
 			found = true
 			break
@@ -195,12 +214,19 @@ func (c *Checker) Check() *Checker {
 	// start server in new goroutine
 	go c.run()
 
-	timeout := time.Duration(5 * time.Second)
-	client := http.Client{
-		Timeout: timeout,
+	newJar, _ := cookiejar.New(nil)
+
+	for name, _ := range c.pcookies {
+		for _, oldCookie := range c.client.Jar.Cookies(c.request.URL) {
+			if name == oldCookie.Name {
+				newJar.SetCookies(c.request.URL, []*http.Cookie{oldCookie})
+				break
+			}
+		}
 	}
 
-	response, err := client.Do(c.request)
+	c.client.Jar = newJar
+	response, err := c.client.Do(c.request)
 	assert.Nil(c.t, err, "Failed while making new request.", err)
 
 	// save response for assertion checks
