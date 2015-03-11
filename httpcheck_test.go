@@ -303,9 +303,9 @@ func TestStringBody(t *testing.T) {
 	checker := makeTestChecker(mockT)
 
 	checker.Test("GET", "/mirrorbody").
-		WithBodyString("Test123").
+		WithString("Test123").
 		Check().
-		HasBodyString("Test123")
+		HasString("Test123")
 
 	assert.False(t, mockT.Failed())
 }

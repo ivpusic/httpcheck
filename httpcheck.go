@@ -213,12 +213,6 @@ func (c *Checker) HasXml(value interface{}) *Checker {
 
 // body //////////////////////////////////////////////////////////
 
-// Adds the string to the body
-func (c *Checker) WithString(body string) *Checker {
-	c.request.Body = newClosingBufferString(body)
-	return c
-}
-
 // Adds the []byte data to the body
 func (c *Checker) WithBody(body []byte) *Checker {
 	c.request.Body = newClosingBuffer(body)
@@ -235,9 +229,15 @@ func (c *Checker) HasBody(body []byte) *Checker {
 	return c
 }
 
+// Adds the string to the body
+func (c *Checker) WithString(body string) *Checker {
+	c.request.Body = newClosingBufferString(body)
+	return c
+}
+
 // Convenience wrapper for HasBody
 // Checks if body is equal to the given string
-func (c *Checker) HasBodyString(body string) *Checker {
+func (c *Checker) HasString(body string) *Checker {
 	return c.HasBody([]byte(body))
 }
 
