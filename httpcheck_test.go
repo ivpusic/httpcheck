@@ -51,6 +51,8 @@ func (t *testHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		w.Write(body)
 	case "/byte":
 		w.Write([]byte("hello world"))
+	case "/nothing":
+
 	}
 }
 
@@ -259,4 +261,38 @@ func TestCb(t *testing.T) {
 	})
 
 	assert.True(t, called)
+}
+
+func TestCookies(t *testing.T) {
+	mockT := new(testing.T)
+	checker := makeTestChecker(mockT)
+	checker.SetPersistCookies(true)
+	checker.Test("GET", "/some")
+	checker.Check()
+
+	checker.HasCookie("some", "cookie")
+	assert.False(t, mockT.Failed())
+
+	checker.Test("GET", "/nothing")
+	checker.Check()
+
+	checker.HasCookie("some", "cookie")
+	assert.False(t, mockT.Failed())
+}
+
+func TestCookiesDelete(t *testing.T) {
+	mockT := new(testing.T)
+	checker := makeTestChecker(mockT)
+	checker.SetPersistCookies(false)
+	checker.Test("GET", "/some")
+	checker.Check()
+
+	checker.HasCookie("some", "cookie")
+	assert.False(t, mockT.Failed())
+
+	checker.Test("GET", "/nothing")
+	checker.Check()
+
+	checker.HasCookie("some", "cookie")
+	assert.True(t, mockT.Failed())
 }
