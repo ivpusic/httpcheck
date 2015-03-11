@@ -46,6 +46,7 @@ func New(t *testing.T, handler http.Handler, addr string) *Checker {
 		prefix = "http://" + addr
 	}
 
+	jar, _ := cookiejar.New(nil)
 	instance := &Checker{
 		t:       t,
 		handler: handler,
@@ -53,6 +54,7 @@ func New(t *testing.T, handler http.Handler, addr string) *Checker {
 		prefix:  prefix,
 		client: &http.Client{
 			Timeout: time.Duration(5 * time.Second),
+			Jar:     jar,
 		},
 		persist: false,
 	}
@@ -135,7 +137,7 @@ func (c *Checker) HasHeader(key, expectedValue string) *Checker {
 // Will put cookie on request
 func (c *Checker) HasCookie(key, expectedValue string) *Checker {
 	found := false
-	for _, cookie := range c.response.Cookies() {
+	for _, cookie := range c.client.Jar.Cookies(c.request.URL) {
 		if cookie.Name == key && cookie.Value == expectedValue {
 			found = true
 			break
