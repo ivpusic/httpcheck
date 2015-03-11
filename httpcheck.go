@@ -171,6 +171,13 @@ func (c *Checker) HasStatus(status int) *Checker {
 
 // json body /////////////////////////////////////////////////////
 
+// Will add the json-encoded struct to the body
+func (c *Checker) WithJson(value interface{}) *Checker {
+	encoded, err := json.Marshal(value)
+	assert.Nil(c.t, err)
+	return c.WithBody(encoded)
+}
+
 // Will ckeck if body contains json with provided value
 func (c *Checker) HasJson(value interface{}) *Checker {
 	body, err := ioutil.ReadAll(c.response.Body)
@@ -181,6 +188,15 @@ func (c *Checker) HasJson(value interface{}) *Checker {
 	assert.Equal(c.t, string(valueBytes), string(body))
 
 	return c
+}
+
+// xml //////////////////////////////////////////////////////////
+
+// Adds a XML encoded body to the request
+func (c *Checker) WithXml(value interface{}) *Checker {
+	encoded, err := xml.Marshal(value)
+	assert.Nil(c.t, err)
+	return c.WithBody(encoded)
 }
 
 // Will ckeck if body contains xml with provided value
@@ -197,6 +213,12 @@ func (c *Checker) HasXml(value interface{}) *Checker {
 
 // body //////////////////////////////////////////////////////////
 
+// Adds the []byte data to the body
+func (c *Checker) WithBody(body []byte) *Checker {
+	c.request.Body = newClosingBuffer(body)
+	return c
+}
+
 // Will check if body contains provided []byte data
 func (c *Checker) HasBody(body []byte) *Checker {
 	responseBody, err := ioutil.ReadAll(c.response.Body)
@@ -205,6 +227,18 @@ func (c *Checker) HasBody(body []byte) *Checker {
 	assert.Equal(c.t, body, responseBody)
 
 	return c
+}
+
+// Adds the string to the body
+func (c *Checker) WithString(body string) *Checker {
+	c.request.Body = newClosingBufferString(body)
+	return c
+}
+
+// Convenience wrapper for HasBody
+// Checks if body is equal to the given string
+func (c *Checker) HasString(body string) *Checker {
+	return c.HasBody([]byte(body))
 }
 
 // Will make reqeust to built request object.
