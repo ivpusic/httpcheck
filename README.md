@@ -35,6 +35,70 @@ func TestExample(t *testing.T) {
 }
 ```
 
+### Include body
+
+#### String
+```Go
+package main
+
+import (
+	"github.com/ivpusic/httpcheck"
+)
+
+func TestExample(t *testing.T) {
+	checker := httpcheck.New(t, &testHandler{}, ":3000")
+
+	checker.Test("GET", "/some/url").
+		WithString("Hello!")
+		Check().
+		HasStatus(200)
+}
+```
+
+#### JSON
+```Go
+package main
+
+import (
+	"github.com/ivpusic/httpcheck"
+)
+
+func TestExample(t *testing.T) {
+	checker := httpcheck.New(t, &testHandler{}, ":3000")
+
+	data := &someStruct{
+		field1: "hi",
+	}
+
+	checker.Test("GET", "/some/url").
+		WithJson(data)
+		Check().
+		HasStatus(200)
+}
+```
+
+#### XML
+```Go
+package main
+
+import (
+	"github.com/ivpusic/httpcheck"
+)
+
+func TestExample(t *testing.T) {
+	checker := httpcheck.New(t, &testHandler{}, ":3000")
+
+	data := &someStruct{
+		field1: "hi",
+	}
+
+	checker.Test("GET", "/some/url").
+		WithXml(data)
+		Check().
+		HasStatus(200)
+}
+
+```
 ### Provide ``*http.Request`` instance
 ```Go
 package main
