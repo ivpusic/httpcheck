@@ -171,6 +171,7 @@ func (c *Checker) HasStatus(status int) *Checker {
 
 // json body /////////////////////////////////////////////////////
 
+// Will add the json-encoded struct to the body
 func (c *Checker) WithJson(value interface{}) *Checker {
 	encoded, err := json.Marshal(value)
 	assert.Nil(c.t, err)
@@ -212,11 +213,13 @@ func (c *Checker) HasXml(value interface{}) *Checker {
 
 // body //////////////////////////////////////////////////////////
 
-func (c *Checker) WithBodyString(body string) *Checker {
+// Adds the string to the body
+func (c *Checker) WithString(body string) *Checker {
 	c.request.Body = newClosingBufferString(body)
 	return c
 }
 
+// Adds the []byte data to the body
 func (c *Checker) WithBody(body []byte) *Checker {
 	c.request.Body = newClosingBuffer(body)
 	return c
