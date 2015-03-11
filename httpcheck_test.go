@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"github.com/stretchr/testify/assert"
+	"io/ioutil"
 	"net/http"
 	"testing"
 )
@@ -60,6 +61,9 @@ func (t *testHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			Name:  "other",
 			Value: "secondcookie",
 		})
+	case "/mirrorbody":
+		body, _ := ioutil.ReadAll(req.Body)
+		w.Write(body)
 	case "/nothing":
 
 	}
@@ -292,4 +296,62 @@ func TestCookies(t *testing.T) {
 
 	checker.HasCookie("other", "secondcookie")
 	assert.True(t, mockT.Failed())
+}
+
+func TestStringBody(t *testing.T) {
+	mockT := new(testing.T)
+	checker := makeTestChecker(mockT)
+
+	checker.Test("GET", "/mirrorbody").
+		WithBodyString("Test123").
+		Check().
+		HasBodyString("Test123")
+
+	assert.False(t, mockT.Failed())
+}
+
+func TestBytesBody(t *testing.T) {
+	mockT := new(testing.T)
+	checker := makeTestChecker(mockT)
+
+	checker.Test("GET", "/mirrorbody").
+		WithBody([]byte("Test123")).
+		Check().
+		HasBody([]byte("Test123"))
+
+	assert.False(t, mockT.Failed())
+}
+
+func TestJsonBody(t *testing.T) {
+	mockT := new(testing.T)
+	checker := makeTestChecker(mockT)
+
+	person := &testPerson{
+		Name: "Some",
+		Age:  30,
+	}
+
+	checker.Test("GET", "/mirrorbody").
+		WithJson(person).
+		Check().
+		HasJson(person)
+
+	assert.False(t, mockT.Failed())
+}
+
+func TestXmlBody(t *testing.T) {
+	mockT := new(testing.T)
+	checker := makeTestChecker(mockT)
+
+	person := &testPerson{
+		Name: "Some",
+		Age:  30,
+	}
+
+	checker.Test("GET", "/mirrorbody").
+		WithXml(person).
+		Check().
+		HasXml(person)
+
+	assert.False(t, mockT.Failed())
 }
