@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
+	"net/http/cookiejar"
 	"strings"
 	"testing"
 	"time"
@@ -19,9 +20,12 @@ type (
 		handler  http.Handler
 		addr     string
 		server   *manners.GracefulServer
+		client   *http.Client
 		request  *http.Request
 		response *http.Response
 		prefix   string
+		// whether cookies should be saved during multipli calls
+		persist bool
 	}
 
 	Callback func(*http.Response)
@@ -47,10 +51,20 @@ func New(t *testing.T, handler http.Handler, addr string) *Checker {
 		handler: handler,
 		addr:    addr,
 		prefix:  prefix,
+		client: &http.Client{
+			Timeout: time.Duration(5 * time.Second),
+		},
+		persist: false,
 	}
 	instance.server = manners.NewServer()
 
 	return instance
+}
+
+// Sets whether server-issued http cookies are saved between calls
+// Default: False
+func (c *Checker) SetPersistCookies(persist bool) {
+	c.persist = persist
 }
 
 // Will run HTTP server
@@ -195,12 +209,12 @@ func (c *Checker) Check() *Checker {
 	// start server in new goroutine
 	go c.run()
 
-	timeout := time.Duration(5 * time.Second)
-	client := http.Client{
-		Timeout: timeout,
+	if !c.persist {
+		jar, _ := cookiejar.New(nil)
+		c.client.Jar = jar
 	}
 
-	response, err := client.Do(c.request)
+	response, err := c.client.Do(c.request)
 	assert.Nil(c.t, err, "Failed while making new request.", err)
 
 	// save response for assertion checks
