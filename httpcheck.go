@@ -3,15 +3,16 @@ package httpcheck
 import (
 	"encoding/json"
 	"encoding/xml"
-	"github.com/braintree/manners"
-	"github.com/ivpusic/golog"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/braintree/manners"
+	"github.com/ivpusic/golog"
+	"github.com/stretchr/testify/assert"
 )
 
 type (
@@ -19,7 +20,6 @@ type (
 		t        *testing.T
 		handler  http.Handler
 		addr     string
-		server   *manners.GracefulServer
 		client   *http.Client
 		request  *http.Request
 		response *http.Response
@@ -57,7 +57,6 @@ func New(t *testing.T, handler http.Handler, addr string) *Checker {
 		},
 		pcookies: map[string]bool{},
 	}
-	instance.server = manners.NewServer()
 
 	return instance
 }
@@ -75,15 +74,13 @@ func (c *Checker) UnpersistCookie(cookie string) {
 // Will run HTTP server
 func (c *Checker) run() {
 	logger.Debug("running server")
-	c.server.ListenAndServe(c.addr, c.handler)
+	go manners.ListenAndServe(c.addr, c.handler)
 }
 
 // Will stop HTTP server
 func (c *Checker) stop() {
 	logger.Debug("stopping server")
-	c.server.Shutdown <- true
-	// todo: solve race condition
-	time.Sleep(1 * time.Millisecond)
+	manners.Close()
 }
 
 // make request /////////////////////////////////////////////////

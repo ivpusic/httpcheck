@@ -3,10 +3,11 @@ package httpcheck
 import (
 	"encoding/json"
 	"encoding/xml"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type testPerson struct {
@@ -84,7 +85,6 @@ func TestNew(t *testing.T) {
 	assert.Exactly(t, t, checker.t)
 	assert.Exactly(t, handler, checker.handler)
 	assert.Exactly(t, addr, checker.addr)
-	assert.NotNil(t, checker.server)
 }
 
 func TestTest(t *testing.T) {
