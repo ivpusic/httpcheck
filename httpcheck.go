@@ -25,6 +25,7 @@ type (
 		response *http.Response
 		prefix   string
 		pcookies map[string]bool
+		end      chan bool
 	}
 
 	Callback func(*http.Response)
@@ -56,6 +57,7 @@ func New(t *testing.T, handler http.Handler, addr string) *Checker {
 			Jar:     jar,
 		},
 		pcookies: map[string]bool{},
+		end:      make(chan bool),
 	}
 
 	return instance
@@ -74,7 +76,8 @@ func (c *Checker) UnpersistCookie(cookie string) {
 // Will run HTTP server
 func (c *Checker) run() {
 	logger.Debug("running server")
-	go manners.ListenAndServe(c.addr, c.handler)
+	manners.ListenAndServe(c.addr, c.handler)
+	c.end <- true
 }
 
 // Will stop HTTP server
@@ -245,6 +248,10 @@ func (c *Checker) Check() *Checker {
 	// start server in new goroutine
 	go c.run()
 
+	// todo: try to avoid this
+	// this is giving server enought time to start
+	time.Sleep(10)
+
 	newJar, _ := cookiejar.New(nil)
 
 	for name, _ := range c.pcookies {
@@ -258,13 +265,19 @@ func (c *Checker) Check() *Checker {
 
 	c.client.Jar = newJar
 	response, err := c.client.Do(c.request)
-	assert.Nil(c.t, err, "Failed while making new request.", err)
+	if err != nil {
+		println(err.Error())
+		c.t.FailNow()
+	}
+
+	// assert.Nil(c.t, err, "Failed while making new request.", err)
 
 	// save response for assertion checks
 	c.response = response
 
 	// stop server
 	c.stop()
+	<-c.end
 
 	return c
 }
