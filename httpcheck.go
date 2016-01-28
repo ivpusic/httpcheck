@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/braintree/manners"
+	"net/http/httptest"
 	"github.com/ivpusic/golog"
 	"github.com/stretchr/testify/assert"
 )
@@ -18,14 +18,12 @@ import (
 type (
 	Checker struct {
 		t        *testing.T
-		handler  http.Handler
-		addr     string
 		client   *http.Client
 		request  *http.Request
 		response *http.Response
-		prefix   string
 		pcookies map[string]bool
-		end      chan bool
+		server *httptest.Server
+        handler http.Handler
 	}
 
 	Callback func(*http.Response)
@@ -35,32 +33,26 @@ var (
 	logger = golog.GetLogger("github.com/ivpusic/httpcheck")
 )
 
-func New(t *testing.T, handler http.Handler, addr string) *Checker {
+func New(t *testing.T, handler http.Handler) *Checker {
 	logger.Level = golog.INFO
-	prefix := ""
-
-	addrParts := strings.Split(addr, ":")
-	if addrParts[0] == "" {
-		prefix = "http://localhost" + addr
-	} else {
-		prefix = "http://" + addr
-	}
 
 	jar, _ := cookiejar.New(nil)
 	instance := &Checker{
 		t:       t,
-		handler: handler,
-		addr:    addr,
-		prefix:  prefix,
 		client: &http.Client{
 			Timeout: time.Duration(5 * time.Second),
 			Jar:     jar,
 		},
 		pcookies: map[string]bool{},
-		end:      make(chan bool),
+		server: createServer(handler),
+        handler: handler,
 	}
 
 	return instance
+}
+
+func createServer(handler http.Handler) *httptest.Server {
+    return httptest.NewUnstartedServer(handler);
 }
 
 // enables a cookie to be preserved between requests
@@ -73,17 +65,18 @@ func (c *Checker) UnpersistCookie(cookie string) {
 	delete(c.pcookies, cookie)
 }
 
+
 // Will run HTTP server
 func (c *Checker) run() {
 	logger.Debug("running server")
-	manners.ListenAndServe(c.addr, c.handler)
-	c.end <- true
+	c.server.Start()
 }
 
 // Will stop HTTP server
 func (c *Checker) stop() {
 	logger.Debug("stopping server")
-	manners.Close()
+	c.server.Close()
+    c.server = createServer(c.handler)
 }
 
 // make request /////////////////////////////////////////////////
@@ -101,7 +94,7 @@ func (c *Checker) TestRequest(request *http.Request) *Checker {
 // Prepare for testing some part of code which lives on provided path and method.
 func (c *Checker) Test(method, path string) *Checker {
 	method = strings.ToUpper(method)
-	request, err := http.NewRequest(method, c.prefix+path, nil)
+	request, err := http.NewRequest(method, c.GetUrl()+path, nil)
 
 	assert.Nil(c.t, err, "Failed to make new request")
 
@@ -109,14 +102,8 @@ func (c *Checker) Test(method, path string) *Checker {
 	return c
 }
 
-// Final URL for request will be prefix+path.
-// Prefix can be something like "http://localhost:3000", and path can be "/some/path" for example.
-// Path is provided by user using "Test" method.
-// Library will try to figure out URL prefix automatically for you.
-// But in case that for your case is not the best, you can set prefix manually
-func (c *Checker) SetPrefix(prefix string) *Checker {
-	c.prefix = prefix
-	return c
+func (c *Checker) GetUrl() string {
+	return "http://" + c.server.Listener.Addr().String()
 }
 
 // headers ///////////////////////////////////////////////////////
@@ -246,11 +233,8 @@ func (c *Checker) HasString(body string) *Checker {
 // Responsibility of this method is also to start and stop HTTP server
 func (c *Checker) Check() *Checker {
 	// start server in new goroutine
-	go c.run()
-
-	// todo: try to avoid this
-	// this is giving server enought time to start
-	time.Sleep(10)
+    c.run()
+	defer c.stop()
 
 	newJar, _ := cookiejar.New(nil)
 
@@ -274,10 +258,6 @@ func (c *Checker) Check() *Checker {
 
 	// save response for assertion checks
 	c.response = response
-
-	// stop server
-	c.stop()
-	<-c.end
 
 	return c
 }
