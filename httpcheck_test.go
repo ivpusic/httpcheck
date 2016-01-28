@@ -56,6 +56,15 @@ func (t *testHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	case "/mirrorbody":
 		body, _ := ioutil.ReadAll(req.Body)
 		w.Write(body)
+	case "/cookies":
+		http.SetCookie(w, &http.Cookie{
+			Name:  "some",
+			Value: "cookie",
+		})
+		http.SetCookie(w, &http.Cookie{
+			Name:  "other",
+			Value: "secondcookie",
+		})
 	case "/nothing":
 
 	}
@@ -319,4 +328,26 @@ func TestXmlBody(t *testing.T) {
 		HasXml(person)
 
 	assert.False(t, mockT.Failed())
+}
+
+func TestCookies(t *testing.T) {
+	mockT := new(testing.T)
+	checker := makeTestChecker(mockT)
+	checker.PersistCookie("some")
+
+	checker.Test("GET", "/cookies")
+	checker.Check()
+
+	checker.HasCookie("some", "cookie")
+	checker.HasCookie("other", "secondcookie")
+	assert.False(t, mockT.Failed())
+
+	checker.Test("GET", "/nothing")
+	checker.Check()
+
+	checker.HasCookie("some", "cookie")
+	assert.False(t, mockT.Failed())
+
+	checker.HasCookie("other", "secondcookie")
+	assert.True(t, mockT.Failed())
 }
