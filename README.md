@@ -1,7 +1,7 @@
 # httpcheck
 [![Build Status](https://travis-ci.org/ivpusic/httpcheck.svg?branch=master)](https://travis-ci.org/ivpusic/httpcheck)
 
-[supertest](https://github.com/tj/supertest) inspired library for testing HTTP servers.
+[supertest](https://github.com/visionmedia/supertest) inspired library for testing HTTP servers.
 
 ## How to install?
 ```
