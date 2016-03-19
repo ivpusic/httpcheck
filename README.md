@@ -22,7 +22,8 @@ import (
 )
 
 func TestExample(t *testing.T) {
-	checker := httpcheck.New(t, &testHandler{}, ":3000")
+	// testHandler should be instance of http.Handler
+	checker := httpcheck.New(t, &testHandler{})
 
 	checker.Test("GET", "/some/url").
 		WithHeader("key", "value").
@@ -46,7 +47,7 @@ import (
 )
 
 func TestExample(t *testing.T) {
-	checker := httpcheck.New(t, &testHandler{}, ":3000")
+	checker := httpcheck.New(t, &testHandler{})
 
 	checker.Test("GET", "/some/url").
 		WithString("Hello!")
@@ -64,7 +65,7 @@ import (
 )
 
 func TestExample(t *testing.T) {
-	checker := httpcheck.New(t, &testHandler{}, ":3000")
+	checker := httpcheck.New(t, &testHandler{})
 
 	data := &someStruct{
 		field1: "hi",
@@ -86,7 +87,7 @@ import (
 )
 
 func TestExample(t *testing.T) {
-	checker := httpcheck.New(t, &testHandler{}, ":3000")
+	checker := httpcheck.New(t, &testHandler{})
 
 	data := &someStruct{
 		field1: "hi",
@@ -109,7 +110,7 @@ import (
 )
 
 func TestExample(t *testing.T) {
-	checker := httpcheck.New(t, &testHandler{}, ":3000")
+	checker := httpcheck.New(t, &testHandler{})
 
 	checker.TestRequest(&http.Request{ /* fields */ }).
 		Check().
@@ -127,7 +128,7 @@ import (
 )
 
 func TestExample(t *testing.T) {
-	checker := httpcheck.New(t, &testHandler{}, ":3000")
+	checker := httpcheck.New(t, &testHandler{})
 
 	checker.Test("GET", "/some/url").
 		Check().
