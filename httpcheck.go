@@ -202,6 +202,7 @@ func (c *Checker) HasXml(value interface{}) *Checker {
 // Adds the []byte data to the body
 func (c *Checker) WithBody(body []byte) *Checker {
 	c.request.Body = newClosingBuffer(body)
+	c.request.ContentLength = int64(len(body))
 	return c
 }
 
@@ -218,6 +219,7 @@ func (c *Checker) HasBody(body []byte) *Checker {
 // Adds the string to the body
 func (c *Checker) WithString(body string) *Checker {
 	c.request.Body = newClosingBufferString(body)
+	c.request.ContentLength = int64(len(body))
 	return c
 }
 
