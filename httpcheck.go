@@ -10,9 +10,9 @@ import (
 	"testing"
 	"time"
 
-	"net/http/httptest"
 	"github.com/ivpusic/golog"
 	"github.com/stretchr/testify/assert"
+	"net/http/httptest"
 )
 
 type (
@@ -22,8 +22,8 @@ type (
 		request  *http.Request
 		response *http.Response
 		pcookies map[string]bool
-		server *httptest.Server
-        handler http.Handler
+		server   *httptest.Server
+		handler  http.Handler
 	}
 
 	Callback func(*http.Response)
@@ -38,21 +38,21 @@ func New(t *testing.T, handler http.Handler) *Checker {
 
 	jar, _ := cookiejar.New(nil)
 	instance := &Checker{
-		t:       t,
+		t: t,
 		client: &http.Client{
 			Timeout: time.Duration(5 * time.Second),
 			Jar:     jar,
 		},
 		pcookies: map[string]bool{},
-		server: createServer(handler),
-        handler: handler,
+		server:   createServer(handler),
+		handler:  handler,
 	}
 
 	return instance
 }
 
 func createServer(handler http.Handler) *httptest.Server {
-    return httptest.NewUnstartedServer(handler);
+	return httptest.NewUnstartedServer(handler)
 }
 
 // enables a cookie to be preserved between requests
@@ -65,7 +65,6 @@ func (c *Checker) UnpersistCookie(cookie string) {
 	delete(c.pcookies, cookie)
 }
 
-
 // Will run HTTP server
 func (c *Checker) run() {
 	logger.Debug("running server")
@@ -76,7 +75,7 @@ func (c *Checker) run() {
 func (c *Checker) stop() {
 	logger.Debug("stopping server")
 	c.server.Close()
-    c.server = createServer(c.handler)
+	c.server = createServer(c.handler)
 }
 
 // make request /////////////////////////////////////////////////
@@ -203,6 +202,7 @@ func (c *Checker) HasXml(value interface{}) *Checker {
 // Adds the []byte data to the body
 func (c *Checker) WithBody(body []byte) *Checker {
 	c.request.Body = newClosingBuffer(body)
+	c.request.ContentLength = int64(len(body))
 	return c
 }
 
@@ -219,6 +219,7 @@ func (c *Checker) HasBody(body []byte) *Checker {
 // Adds the string to the body
 func (c *Checker) WithString(body string) *Checker {
 	c.request.Body = newClosingBufferString(body)
+	c.request.ContentLength = int64(len(body))
 	return c
 }
 
@@ -233,7 +234,7 @@ func (c *Checker) HasString(body string) *Checker {
 // Responsibility of this method is also to start and stop HTTP server
 func (c *Checker) Check() *Checker {
 	// start server in new goroutine
-    c.run()
+	c.run()
 	defer c.stop()
 
 	newJar, _ := cookiejar.New(nil)
