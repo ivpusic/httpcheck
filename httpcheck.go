@@ -78,6 +78,15 @@ func (c *Checker) stop() {
 	c.server = createServer(c.handler)
 }
 
+func (c *Checker) SetTesting(t *testing.T) *Checker {
+	if t == nil {
+		panic("testing.T is nil")
+	}
+
+	c.t = t
+	return c
+}
+
 // make request /////////////////////////////////////////////////
 
 // If you want to provide you custom http.Request instance, you can do it using this method
@@ -113,10 +122,29 @@ func (c *Checker) WithHeader(key, value string) *Checker {
 	return c
 }
 
+// Will put a map of headers on request
+func (c *Checker) WithHeaders(headers map[string]string) *Checker {
+	for key, value := range headers {
+		c.request.Header.Set(key, value)
+	}
+	return c
+}
+
 // Will check if response contains header on provided key with provided value
 func (c *Checker) HasHeader(key, expectedValue string) *Checker {
 	value := c.response.Header.Get(key)
 	assert.Exactly(c.t, expectedValue, value)
+
+	return c
+}
+
+// Will check if response contains a provided headers map
+func (c *Checker) HasHeaders(headers map[string]string) *Checker {
+
+	for key, expectedValue := range headers {
+		value := c.response.Header.Get(key)
+		assert.Exactly(c.t, expectedValue, value)
+	}
 
 	return c
 }
