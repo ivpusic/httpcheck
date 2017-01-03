@@ -78,6 +78,15 @@ func (c *Checker) stop() {
 	c.server = createServer(c.handler)
 }
 
+func (c *Checker) SetTesting(t *testing.T) *Checker {
+	if t == nil {
+		panic("testing.T is nil")
+	}
+
+	c.t = t
+	return c
+}
+
 // make request /////////////////////////////////////////////////
 
 // If you want to provide you custom http.Request instance, you can do it using this method

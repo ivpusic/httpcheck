@@ -83,6 +83,14 @@ func TestNew(t *testing.T) {
 	assert.Exactly(t, t, checker.t)
 }
 
+func TestSetTesting(t *testing.T) {
+	checker := New(nil, &testHandler{})
+	checker.SetTesting(t)
+
+	assert.NotNil(t, checker.t)
+	assert.Exactly(t, t, checker.t)
+}
+
 func TestTest(t *testing.T) {
 	checker := makeTestChecker(t)
 	checker.Test("GET", "/some")
