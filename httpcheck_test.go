@@ -70,22 +70,18 @@ func (t *testHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func makeTestChecker(t *testing.T) *Checker {
-	handler := &testHandler{}
-	return New(t, handler)
+func makeTestChecker() *Checker {
+	return New(&testHandler{})
 }
 
 func TestNew(t *testing.T) {
-	handler := &testHandler{}
-	checker := New(t, handler)
-
+	checker := New(&testHandler{})
 	assert.NotNil(t, checker)
-	assert.Exactly(t, t, checker.t)
 }
 
 func TestTest(t *testing.T) {
-	checker := makeTestChecker(t)
-	checker.Test("GET", "/some")
+	checker := makeTestChecker()
+	checker.Test(t, "GET", "/some")
 
 	assert.NotNil(t, checker.request)
 	assert.Exactly(t, "GET", checker.request.Method)
@@ -93,32 +89,30 @@ func TestTest(t *testing.T) {
 }
 
 func TestRequest(t *testing.T) {
-	checker := makeTestChecker(t)
+	checker := makeTestChecker()
 	request := &http.Request{
 		Method: "GET",
 	}
 
-	checker.TestRequest(request)
+	checker.TestRequest(t, request)
 	assert.NotNil(t, checker.request)
 	assert.Exactly(t, "GET", checker.request.Method)
 	assert.Nil(t, checker.request.URL)
 }
 
 func TestWithHeader(t *testing.T) {
-	checker := makeTestChecker(t)
-	checker.Test("GET", "/some")
-
-	checker.WithHeader("key", "value")
+	checker := makeTestChecker()
+	checker.Test(t, "GET", "/some").
+		WithHeader("key", "value")
 
 	assert.Equal(t, checker.request.Header.Get("key"), "value")
 	assert.Equal(t, "", checker.request.Header.Get("unknown"))
 }
 
 func TestWithCookie(t *testing.T) {
-	checker := makeTestChecker(t)
-	checker.Test("GET", "/some")
-
-	checker.WithCookie("key", "value")
+	checker := makeTestChecker()
+	checker.Test(t, "GET", "/some").
+		WithCookie("key", "value")
 
 	cookie, err := checker.request.Cookie("key")
 	assert.Nil(t, err)
@@ -129,9 +123,9 @@ func TestWithCookie(t *testing.T) {
 }
 
 func TestCheck(t *testing.T) {
-	checker := makeTestChecker(t)
-	checker.Test("GET", "/some")
-	checker.Check()
+	checker := makeTestChecker()
+	checker.Test(t, "GET", "/some").
+		Check()
 
 	assert.NotNil(t, checker.response)
 	assert.Exactly(t, 204, checker.response.StatusCode)
@@ -139,144 +133,131 @@ func TestCheck(t *testing.T) {
 
 func TestHasStatus(t *testing.T) {
 	mockT := new(testing.T)
-	checker := makeTestChecker(mockT)
-	checker.Test("GET", "/some")
-	checker.Check()
-
-	checker.HasStatus(202)
+	checker := makeTestChecker()
+	checker.Test(mockT, "GET", "/some").
+		Check().
+		HasStatus(202)
 	assert.True(t, mockT.Failed())
 
 	mockT = new(testing.T)
-	checker = makeTestChecker(mockT)
-	checker.Test("GET", "/some")
-	checker.Check()
-
-	checker.HasStatus(204)
+	checker = makeTestChecker()
+	checker.Test(mockT, "GET", "/some").
+		Check().
+		HasStatus(204)
 	assert.False(t, mockT.Failed())
 }
 
 func TestHasHeader(t *testing.T) {
 	mockT := new(testing.T)
-	checker := makeTestChecker(mockT)
-	checker.Test("GET", "/some")
-	checker.Check()
-
-	checker.HasHeader("some", "header")
+	checker := makeTestChecker()
+	checker.Test(mockT, "GET", "/some").
+		Check().
+		HasHeader("some", "header")
 	assert.False(t, mockT.Failed())
 
 	mockT = new(testing.T)
-	checker = makeTestChecker(mockT)
-	checker.Test("GET", "/some")
-	checker.Check()
-
-	checker.HasHeader("some", "unknown")
+	checker = makeTestChecker()
+	checker.Test(mockT, "GET", "/some").
+		Check().
+		HasHeader("some", "unknown")
 	assert.True(t, mockT.Failed())
 
 	mockT = new(testing.T)
-	checker = makeTestChecker(mockT)
-	checker.Test("GET", "/some")
-	checker.Check()
-
-	checker.HasHeader("unknown", "header")
+	checker = makeTestChecker()
+	checker.Test(mockT, "GET", "/some").
+		Check().
+		HasHeader("unknown", "header")
 	assert.True(t, mockT.Failed())
 }
 
 func TestHasCookie(t *testing.T) {
 	mockT := new(testing.T)
-	checker := makeTestChecker(mockT)
-	checker.Test("GET", "/some")
-	checker.Check()
-
-	checker.HasCookie("some", "cookie")
+	checker := makeTestChecker()
+	checker.Test(mockT, "GET", "/some").
+		Check().
+		HasCookie("some", "cookie")
 	assert.False(t, mockT.Failed())
 
 	mockT = new(testing.T)
-	checker = makeTestChecker(mockT)
-	checker.Test("GET", "/some")
-	checker.Check()
-
-	checker.HasCookie("some", "unknown")
+	checker = makeTestChecker()
+	checker.Test(mockT, "GET", "/some").
+		Check().
+		HasCookie("some", "unknown")
 	assert.True(t, mockT.Failed())
 
 	mockT = new(testing.T)
-	checker = makeTestChecker(mockT)
-	checker.Test("GET", "/some")
-	checker.Check()
-
-	checker.HasCookie("unknown", "cookie")
+	checker = makeTestChecker()
+	checker.Test(mockT, "GET", "/some").
+		Check().
+		HasCookie("unknown", "cookie")
 	assert.True(t, mockT.Failed())
 }
 
 func TestHasJson(t *testing.T) {
 	mockT := new(testing.T)
-	checker := makeTestChecker(mockT)
-	checker.Test("GET", "/json")
-	checker.Check()
-
 	person := &testPerson{
 		Name: "Some",
 		Age:  30,
 	}
-	checker.HasJson(person)
+	checker := makeTestChecker()
+	result := checker.Test(mockT, "GET", "/json").
+		Check().
+		HasJSON(person)
 	assert.False(t, mockT.Failed())
 
 	person = &testPerson{
 		Name: "Unknown",
 		Age:  30,
 	}
-	checker.HasJson(person)
+	result.HasJSON(person)
 	assert.True(t, mockT.Failed())
 }
 
 func TestHasXml(t *testing.T) {
 	mockT := new(testing.T)
-	checker := makeTestChecker(mockT)
-	checker.Test("GET", "/xml")
-	checker.Check()
-
 	person := &testPerson{
 		Name: "Some",
 		Age:  30,
 	}
-	checker.HasXml(person)
+	checker := makeTestChecker()
+	result := checker.Test(mockT, "GET", "/xml").
+		Check().
+		HasXML(person)
 	assert.False(t, mockT.Failed())
 
 	person = &testPerson{
 		Name: "Unknown",
 		Age:  30,
 	}
-	checker.HasXml(person)
+	result.HasXML(person)
 	assert.True(t, mockT.Failed())
 }
 
 func TestHasBody(t *testing.T) {
 	mockT := new(testing.T)
-	checker := makeTestChecker(mockT)
-	checker.Test("GET", "/byte")
-	checker.Check()
-
-	checker.HasBody([]byte("hello world"))
+	checker := makeTestChecker()
+	checker.Test(mockT, "GET", "/byte").
+		Check().
+		HasBody([]byte("hello world"))
 }
 
 func TestCb(t *testing.T) {
 	mockT := new(testing.T)
-	checker := makeTestChecker(mockT)
-	checker.Test("GET", "/json")
-	checker.Check()
-
 	called := false
-	checker.Cb(func(response *http.Response) {
-		called = true
-	})
-
+	checker := makeTestChecker()
+	checker.Test(mockT, "GET", "/json").
+		Check().
+		Cb(func(response *http.Response) {
+			called = true
+		})
 	assert.True(t, called)
 }
 
 func TestStringBody(t *testing.T) {
 	mockT := new(testing.T)
-	checker := makeTestChecker(mockT)
+	checker := makeTestChecker()
 
-	checker.Test("GET", "/mirrorbody").
+	checker.Test(mockT, "GET", "/mirrorbody").
 		WithString("Test123").
 		Check().
 		HasString("Test123")
@@ -286,9 +267,9 @@ func TestStringBody(t *testing.T) {
 
 func TestBytesBody(t *testing.T) {
 	mockT := new(testing.T)
-	checker := makeTestChecker(mockT)
+	checker := makeTestChecker()
 
-	checker.Test("GET", "/mirrorbody").
+	checker.Test(mockT, "GET", "/mirrorbody").
 		WithBody([]byte("Test123")).
 		Check().
 		HasBody([]byte("Test123"))
@@ -298,56 +279,60 @@ func TestBytesBody(t *testing.T) {
 
 func TestJsonBody(t *testing.T) {
 	mockT := new(testing.T)
-	checker := makeTestChecker(mockT)
+	checker := makeTestChecker()
 
 	person := &testPerson{
 		Name: "Some",
 		Age:  30,
 	}
 
-	checker.Test("GET", "/mirrorbody").
-		WithJson(person).
+	checker.Test(mockT, "GET", "/mirrorbody").
+		WithJSON(person).
 		Check().
-		HasJson(person)
+		HasJSON(person)
 
 	assert.False(t, mockT.Failed())
 }
 
 func TestXmlBody(t *testing.T) {
 	mockT := new(testing.T)
-	checker := makeTestChecker(mockT)
+	checker := makeTestChecker()
 
 	person := &testPerson{
 		Name: "Some",
 		Age:  30,
 	}
 
-	checker.Test("GET", "/mirrorbody").
-		WithXml(person).
+	checker.Test(mockT, "GET", "/mirrorbody").
+		WithXML(person).
 		Check().
-		HasXml(person)
+		HasXML(person)
 
 	assert.False(t, mockT.Failed())
 }
 
 func TestCookies(t *testing.T) {
 	mockT := new(testing.T)
-	checker := makeTestChecker(mockT)
+	checker := makeTestChecker()
 	checker.PersistCookie("some")
 
-	checker.Test("GET", "/cookies")
-	checker.Check()
-
-	checker.HasCookie("some", "cookie")
-	checker.HasCookie("other", "secondcookie")
+	checker.Test(mockT, "GET", "/cookies").
+		Check().
+		HasCookie("some", "cookie").
+		HasCookie("other", "secondcookie")
 	assert.False(t, mockT.Failed())
 
-	checker.Test("GET", "/nothing")
-	checker.Check()
-
-	checker.HasCookie("some", "cookie")
+	result := checker.Test(mockT, "GET", "/nothing").
+		Check().
+		HasCookie("some", "cookie")
 	assert.False(t, mockT.Failed())
 
-	checker.HasCookie("other", "secondcookie")
+	result.UnpersistCookie("some")
+	result = checker.Test(mockT, "GET", "/nothing").
+		Check().
+		HasCookie("some", "cookie")
+	assert.True(t, mockT.Failed())
+
+	result.HasCookie("other", "secondcookie")
 	assert.True(t, mockT.Failed())
 }
