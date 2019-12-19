@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/ikawaha/httpcheck.svg?branch=master)](https://travis-ci.org/ikawaha/httpcheck)
+
 # httpcheck
 
 [supertest](https://github.com/visionmedia/supertest) inspired library for testing HTTP servers.
