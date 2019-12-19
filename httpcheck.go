@@ -14,8 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// Checker represents the HTTP checker.
-type Checker struct {
+type checker struct {
 	client   *http.Client
 	request  *http.Request
 	response *http.Response
@@ -24,26 +23,26 @@ type Checker struct {
 	handler  http.Handler
 }
 
-type checker struct {
+// Checker represents the HTTP Checker.
+type Checker struct {
 	t *testing.T
-	*Checker
+	*checker
 }
 
-// Option represents the option for the HTTP checker.
-type Option func(*Checker)
+// Option represents the option for the HTTP Checker.
+type Option func(*checker)
 
 // ClientTimeout sets the client timeout.
 func ClientTimeout(d time.Duration) Option {
-	return func(c *Checker) {
+	return func(c *checker) {
 		c.client.Timeout = d
 	}
 }
 
-// New creates a HTTP checker.
-func New(handler http.Handler, options ...Option) *Checker {
+// New creates a HTTP Checker.
+func New(handler http.Handler, options ...Option) *checker {
 	jar, _ := cookiejar.New(nil)
-	instance := &Checker{
-		//t: t,
+	checker := &checker{
 		client: &http.Client{
 			Timeout: time.Duration(5 * time.Second),
 			Jar:     jar,
@@ -52,8 +51,10 @@ func New(handler http.Handler, options ...Option) *Checker {
 		server:   createServer(handler),
 		handler:  handler,
 	}
-
-	return instance
+	for _, v := range options {
+		v(checker)
+	}
+	return checker
 }
 
 func createServer(handler http.Handler) *httptest.Server {
@@ -61,12 +62,12 @@ func createServer(handler http.Handler) *httptest.Server {
 }
 
 // PersistCookie - enables a cookie to be preserved between requests
-func (c *Checker) PersistCookie(cookie string) {
+func (c *checker) PersistCookie(cookie string) {
 	c.pcookies[cookie] = true
 }
 
 // UnpersistCookie - the specified cookie will not be preserved during requests anymore
-func (c *Checker) UnpersistCookie(cookie string) {
+func (c *checker) UnpersistCookie(cookie string) {
 	delete(c.pcookies, cookie)
 }
 
@@ -88,45 +89,45 @@ func (c *Checker) stop() {
 // TestRequest - If you want to provide you custom http.Request instance, you can do it using this method
 // In this case internal http.Request instance won't be created, and passed instane will be used
 // for making request
-func (c *Checker) TestRequest(t *testing.T, request *http.Request) *checker {
+func (c *checker) TestRequest(t *testing.T, request *http.Request) *Checker {
 	assert.NotNil(t, request, "Request nil")
 
 	c.request = request
-	return &checker{
+	return &Checker{
 		t:       t,
-		Checker: c,
+		checker: c,
 	}
 }
 
 // Test - Prepare for testing some part of code which lives on provided path and method.
-func (c *Checker) Test(t *testing.T, method, path string) *checker {
+func (c *checker) Test(t *testing.T, method, path string) *Checker {
 	method = strings.ToUpper(method)
 	request, err := http.NewRequest(method, c.GetURL()+path, nil)
 
 	assert.Nil(t, err, "Failed to make new request")
 
 	c.request = request
-	return &checker{
+	return &Checker{
 		t:       t,
-		Checker: c,
+		checker: c,
 	}
 }
 
 // GetURL returns the server URL.
-func (c *Checker) GetURL() string {
+func (c *checker) GetURL() string {
 	return "http://" + c.server.Listener.Addr().String()
 }
 
 // headers ///////////////////////////////////////////////////////
 
 // WithHeader - Will put header on request
-func (c *checker) WithHeader(key, value string) *checker {
+func (c *Checker) WithHeader(key, value string) *Checker {
 	c.request.Header.Set(key, value)
 	return c
 }
 
 // HasHeader - Will check if response contains header on provided key with provided value
-func (c *checker) HasHeader(key, expectedValue string) *checker {
+func (c *Checker) HasHeader(key, expectedValue string) *Checker {
 	value := c.response.Header.Get(key)
 	assert.Exactly(c.t, expectedValue, value)
 
@@ -136,7 +137,7 @@ func (c *checker) HasHeader(key, expectedValue string) *checker {
 // cookies ///////////////////////////////////////////////////////
 
 // HasCookie - Will put cookie on request
-func (c *checker) HasCookie(key, expectedValue string) *checker {
+func (c *Checker) HasCookie(key, expectedValue string) *Checker {
 	found := false
 	for _, cookie := range c.client.Jar.Cookies(c.request.URL) {
 		if cookie.Name == key && cookie.Value == expectedValue {
@@ -150,7 +151,7 @@ func (c *checker) HasCookie(key, expectedValue string) *checker {
 }
 
 // WithCookie - Will check if response contains cookie with provided key and value
-func (c *checker) WithCookie(key, value string) *checker {
+func (c *Checker) WithCookie(key, value string) *Checker {
 	c.request.AddCookie(&http.Cookie{
 		Name:  key,
 		Value: value,
@@ -162,7 +163,7 @@ func (c *checker) WithCookie(key, value string) *checker {
 // status ////////////////////////////////////////////////////////
 
 // HasStatus - Will ckeck if response status is equal to provided
-func (c *checker) HasStatus(status int) *checker {
+func (c *Checker) HasStatus(status int) *Checker {
 	assert.Exactly(c.t, status, c.response.StatusCode)
 	return c
 }
@@ -170,14 +171,14 @@ func (c *checker) HasStatus(status int) *checker {
 // json body /////////////////////////////////////////////////////
 
 // WithJSON - Will add the json-encoded struct to the body
-func (c *checker) WithJSON(value interface{}) *checker {
+func (c *Checker) WithJSON(value interface{}) *Checker {
 	encoded, err := json.Marshal(value)
 	assert.Nil(c.t, err)
 	return c.WithBody(encoded)
 }
 
 // HasJSON - Will check if body contains json with provided value
-func (c *checker) HasJSON(value interface{}) *checker {
+func (c *Checker) HasJSON(value interface{}) *Checker {
 	body, err := ioutil.ReadAll(c.response.Body)
 	assert.Nil(c.t, err)
 
@@ -191,14 +192,14 @@ func (c *checker) HasJSON(value interface{}) *checker {
 // xml //////////////////////////////////////////////////////////
 
 // WithXML - Adds a XML encoded body to the request
-func (c *checker) WithXML(value interface{}) *checker {
+func (c *Checker) WithXML(value interface{}) *Checker {
 	encoded, err := xml.Marshal(value)
 	assert.Nil(c.t, err)
 	return c.WithBody(encoded)
 }
 
 // HasXML - Will check if body contains xml with provided value
-func (c *checker) HasXML(value interface{}) *checker {
+func (c *Checker) HasXML(value interface{}) *Checker {
 	body, err := ioutil.ReadAll(c.response.Body)
 	assert.Nil(c.t, err)
 
@@ -212,14 +213,14 @@ func (c *checker) HasXML(value interface{}) *checker {
 // body //////////////////////////////////////////////////////////
 
 // WithBody - Adds the []byte data to the body
-func (c *checker) WithBody(body []byte) *checker {
+func (c *Checker) WithBody(body []byte) *Checker {
 	c.request.Body = newClosingBuffer(body)
 	c.request.ContentLength = int64(len(body))
 	return c
 }
 
 // HasBody - Will check if body contains provided []byte data
-func (c *checker) HasBody(body []byte) *checker {
+func (c *Checker) HasBody(body []byte) *Checker {
 	responseBody, err := ioutil.ReadAll(c.response.Body)
 
 	assert.Nil(c.t, err)
@@ -229,7 +230,7 @@ func (c *checker) HasBody(body []byte) *checker {
 }
 
 // WithString - Adds the string to the body
-func (c *checker) WithString(body string) *checker {
+func (c *Checker) WithString(body string) *Checker {
 	c.request.Body = newClosingBufferString(body)
 	c.request.ContentLength = int64(len(body))
 	return c
@@ -237,14 +238,14 @@ func (c *checker) WithString(body string) *checker {
 
 // HasString - Convenience wrapper for HasBody
 // Checks if body is equal to the given string
-func (c *checker) HasString(body string) *checker {
+func (c *Checker) HasString(body string) *Checker {
 	return c.HasBody([]byte(body))
 }
 
 // Check - Will make request to built request object.
 // After request is made, it will save response object for future assertions
 // Responsibility of this method is also to start and stop HTTP server
-func (c *checker) Check() *checker {
+func (c *Checker) Check() *Checker {
 	// start server in new goroutine
 	c.run()
 	defer c.stop()
@@ -276,6 +277,6 @@ func (c *checker) Check() *checker {
 }
 
 // Cb - Will call provided callback function with current response
-func (c *checker) Cb(cb func(*http.Response)) {
+func (c *Checker) Cb(cb func(*http.Response)) {
 	cb(c.response)
 }
