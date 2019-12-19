@@ -1,15 +1,21 @@
 # httpcheck
-[![Build Status](https://travis-ci.org/ivpusic/httpcheck.svg?branch=master)](https://travis-ci.org/ivpusic/httpcheck)
 
 [supertest](https://github.com/visionmedia/supertest) inspired library for testing HTTP servers.
 
+A Fork from [ivpusic/httpcheck](https://github.com/ivpusic/httpcheck) with following changes:
+
+* Change to set testing.T when generating the request instead of the constructor,
+* Fix to prevent incorrect method chain,
+* Add to the timeout option of the client to the checker.
+
+
 ## How to install?
 ```
-go get github.com/ivpusic/httpcheck
+go get github.com/ikawaha/httpcheck
 ```
 
 ## API Documentation
-[godoc](https://godoc.org/github.com/ivpusic/httpcheck)
+[godoc](https://godoc.org/github.com/ikawaha/httpcheck)
 
 ## How to use?
 
@@ -18,14 +24,14 @@ go get github.com/ivpusic/httpcheck
 package main
 
 import (
-	"github.com/ivpusic/httpcheck"
+	"github.com/ikawaha/httpcheck"
 )
 
 func TestExample(t *testing.T) {
 	// testHandler should be instance of http.Handler
-	checker := httpcheck.New(t, &testHandler{})
+	checker := httpcheck.New(&testHandler{})
 
-	checker.Test("GET", "/some/url").
+	checker.Test(t, "GET", "/some/url").
 		WithHeader("key", "value").
 		WithCookie("key", "value").
 		Check().
@@ -47,9 +53,9 @@ import (
 )
 
 func TestExample(t *testing.T) {
-	checker := httpcheck.New(t, &testHandler{})
+	checker := httpcheck.New(&testHandler{})
 
-	checker.Test("GET", "/some/url").
+	checker.Test(t, "GET", "/some/url").
 		WithString("Hello!")
 		Check().
 		HasStatus(200)
@@ -65,13 +71,13 @@ import (
 )
 
 func TestExample(t *testing.T) {
-	checker := httpcheck.New(t, &testHandler{})
+	checker := httpcheck.New(&testHandler{})
 
 	data := &someStruct{
 		field1: "hi",
 	}
 
-	checker.Test("GET", "/some/url").
+	checker.Test(t, "GET", "/some/url").
 		WithJson(data)
 		Check().
 		HasStatus(200)
@@ -87,13 +93,13 @@ import (
 )
 
 func TestExample(t *testing.T) {
-	checker := httpcheck.New(t, &testHandler{})
+	checker := httpcheck.New(&testHandler{})
 
 	data := &someStruct{
 		field1: "hi",
 	}
 
-	checker.Test("GET", "/some/url").
+	checker.Test(t, "GET", "/some/url").
 		WithXml(data)
 		Check().
 		HasStatus(200)
@@ -110,9 +116,9 @@ import (
 )
 
 func TestExample(t *testing.T) {
-	checker := httpcheck.New(t, &testHandler{})
+	checker := httpcheck.New(&testHandler{})
 
-	checker.TestRequest(&http.Request{ /* fields */ }).
+	checker.TestRequest(t, &http.Request{ /* fields */ }).
 		Check().
 		HasStatus(200)
 }
@@ -124,13 +130,13 @@ package main
 
 import (
 	"net/http"
-	"github.com/ivpusic/httpcheck"
+	"github.com/ikawaha/httpcheck"
 )
 
 func TestExample(t *testing.T) {
-	checker := httpcheck.New(t, &testHandler{})
+	checker := httpcheck.New(&testHandler{})
 
-	checker.Test("GET", "/some/url").
+	checker.Test(t, "GET", "/some/url").
 		Check().
 		HasStatus(200).
 		HasBody([]byte("some body")).
@@ -138,11 +144,5 @@ func TestExample(t *testing.T) {
 }
 ```
 
-## Contribution Guidelines
-- Implement fix/feature
-- Write tests for fix/feature
-- Make sure all tests are passing
-- Send Pull Request
-
-# License
-*MIT*
+---
+License MIT
