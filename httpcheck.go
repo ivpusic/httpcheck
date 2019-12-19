@@ -1,6 +1,8 @@
 package httpcheck
 
 import (
+	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"encoding/xml"
 	"io/ioutil"
@@ -132,6 +134,15 @@ func (c *Checker) HasHeader(key, expectedValue string) *Checker {
 	assert.Exactly(c.t, expectedValue, value)
 
 	return c
+}
+
+// WithBasicAuth - Alias for the basic auth request header.
+func (c *Checker) WithBasicAuth(user, pass string) *Checker {
+	var b bytes.Buffer
+	b.WriteString(user)
+	b.WriteString(":")
+	b.WriteString(pass)
+	return c.WithHeader("Authorization", "Basic "+base64.StdEncoding.EncodeToString(b.Bytes()))
 }
 
 // cookies ///////////////////////////////////////////////////////
