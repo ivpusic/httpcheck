@@ -1,6 +1,7 @@
 package httpcheck
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"encoding/xml"
 	"io/ioutil"
@@ -107,6 +108,20 @@ func TestWithHeader(t *testing.T) {
 
 	assert.Equal(t, checker.request.Header.Get("key"), "value")
 	assert.Equal(t, "", checker.request.Header.Get("unknown"))
+}
+
+func TestWithBasicAuth(t *testing.T) {
+	checker := makeTestChecker()
+	checker.Test(t, "GET", "/some").
+		WithBasicAuth("alice", "secret")
+
+	user, pass, ok := checker.request.BasicAuth()
+	assert.True(t, ok)
+	assert.Equal(t, "alice", user)
+	assert.Equal(t, "secret", pass)
+
+	h := base64.StdEncoding.EncodeToString([]byte("alice:secret"))
+	assert.Equal(t, checker.request.Header.Get("Authorization"), "Basic "+h)
 }
 
 func TestWithCookie(t *testing.T) {
