@@ -38,7 +38,7 @@ func TestExample(t *testing.T) {
 		HasStatus(200).
 		HasCookie("key", "expectedValue").
 		HasHeader("key", "expectedValue").
-		HasJson(&someType{})
+		HasJSON(&someType{})
 }
 ```
 
@@ -78,7 +78,7 @@ func TestExample(t *testing.T) {
 	}
 
 	checker.Test(t, "GET", "/some/url").
-		WithJson(data)
+		WithJSON(data)
 		Check().
 		HasStatus(200)
 }
@@ -100,7 +100,7 @@ func TestExample(t *testing.T) {
 	}
 
 	checker.Test(t, "GET", "/some/url").
-		WithXml(data)
+		WithXML(data)
 		Check().
 		HasStatus(200)
 }
