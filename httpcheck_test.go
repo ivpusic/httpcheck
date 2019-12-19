@@ -70,7 +70,7 @@ func (t *testHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func makeTestChecker() *Checker {
+func makeTestChecker() *checker {
 	return New(&testHandler{})
 }
 
