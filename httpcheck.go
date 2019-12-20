@@ -188,6 +188,11 @@ func (c *Checker) WithJSON(value interface{}) *Checker {
 	return c.WithBody(encoded)
 }
 
+// WithJson - deprecated
+func (c *Checker) WithJson(value interface{}) *Checker {
+	return c.WithJSON(value)
+}
+
 // HasJSON - Will check if body contains json with provided value
 func (c *Checker) HasJSON(value interface{}) *Checker {
 	body, err := ioutil.ReadAll(c.response.Body)
@@ -200,6 +205,11 @@ func (c *Checker) HasJSON(value interface{}) *Checker {
 	return c
 }
 
+// HasJson - deprecated
+func (c *Checker) HasJson(value interface{}) *Checker {
+	return c.HasJSON(value)
+}
+
 // xml //////////////////////////////////////////////////////////
 
 // WithXML - Adds a XML encoded body to the request
@@ -207,6 +217,11 @@ func (c *Checker) WithXML(value interface{}) *Checker {
 	encoded, err := xml.Marshal(value)
 	assert.Nil(c.t, err)
 	return c.WithBody(encoded)
+}
+
+// WithXml - deprecated
+func (c *Checker) WithXml(value interface{}) *Checker {
+	return c.WithXML(value)
 }
 
 // HasXML - Will check if body contains xml with provided value
@@ -219,6 +234,11 @@ func (c *Checker) HasXML(value interface{}) *Checker {
 	assert.Equal(c.t, string(valueBytes), string(body))
 
 	return c
+}
+
+// HasXml - deprecated
+func (c *Checker) HasXml(value interface{}) *Checker {
+	return c.HasXML(value)
 }
 
 // body //////////////////////////////////////////////////////////
