@@ -110,6 +110,23 @@ func TestWithHeader(t *testing.T) {
 	assert.Equal(t, "", checker.request.Header.Get("unknown"))
 }
 
+func TestWithHeaders(t *testing.T) {
+	headers := map[string]string{
+		"key":             "value",
+		"Authorization":   "Token abce-1234",
+		"X-Custom-Header": "custom_value_000",
+	}
+	checker := makeTestChecker()
+	checker.Test(t, "GET", "/some").
+		WithHeaders(headers)
+
+	for k, v := range headers {
+		assert.Equal(t, checker.request.Header.Get(k), v)
+	}
+
+	assert.Equal(t, "", checker.request.Header.Get("unknown"))
+}
+
 func TestWithBasicAuth(t *testing.T) {
 	checker := makeTestChecker()
 	checker.Test(t, "GET", "/some").
@@ -183,6 +200,37 @@ func TestHasHeader(t *testing.T) {
 		Check().
 		HasHeader("unknown", "header")
 	assert.True(t, mockT.Failed())
+}
+
+func TestHasHeaders(t *testing.T) {
+	mockT := new(testing.T)
+	checker := makeTestChecker()
+	checker.Test(mockT, "GET", "/some").
+		Check().
+		HasHeaders(map[string]string{
+			"some": "header",
+		})
+	assert.False(t, mockT.Failed())
+
+	checker.Test(mockT, "GET", "/some").
+		Check().
+		HasHeaders(map[string]string{
+			"unknown":   "header",
+			"X-Unknown": "abc",
+		})
+	assert.True(t, mockT.Failed())
+}
+
+func TestHasNilHeaders(t *testing.T) {
+	mockT := new(testing.T)
+	checker := makeTestChecker()
+
+	// nil is the zero value for maps, so isn't a problem passing nil as parameter to WithHeaders and HasHeaders
+	checker.Test(t, "GET", "/some").
+		WithHeaders(nil).
+		Check().
+		HasHeaders(nil)
+	assert.False(t, mockT.Failed())
 }
 
 func TestHasCookie(t *testing.T) {

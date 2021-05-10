@@ -129,10 +129,29 @@ func (c *Checker) WithHeader(key, value string) *Checker {
 	return c
 }
 
+// Will put a map of headers on request
+func (c *Checker) WithHeaders(headers map[string]string) *Checker {
+	for key, value := range headers {
+		c.request.Header.Set(key, value)
+	}
+	return c
+}
+
 // HasHeader - Will check if response contains header on provided key with provided value
 func (c *Checker) HasHeader(key, expectedValue string) *Checker {
 	value := c.response.Header.Get(key)
 	assert.Exactly(c.t, expectedValue, value)
+
+	return c
+}
+
+// Will check if response contains a provided headers map
+func (c *Checker) HasHeaders(headers map[string]string) *Checker {
+
+	for key, expectedValue := range headers {
+		value := c.response.Header.Get(key)
+		assert.Exactly(c.t, expectedValue, value)
+	}
 
 	return c
 }
