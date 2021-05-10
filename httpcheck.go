@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"encoding/xml"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
@@ -250,13 +251,35 @@ func (c *Checker) WithBody(body []byte) *Checker {
 	return c
 }
 
-// HasBody - Will check if body contains provided []byte data
+// HasBody - Will check if body is equal to provided []byte data
 func (c *Checker) HasBody(body []byte) *Checker {
 	responseBody, err := ioutil.ReadAll(c.response.Body)
 
 	assert.Nil(c.t, err)
 	assert.Equal(c.t, body, responseBody)
 
+	return c
+}
+
+// ContainsBody - Will check if body contains provided [] byte data
+func (c *Checker) ContainsBody(subslice []byte) *Checker {
+	b, err := ioutil.ReadAll(c.response.Body)
+
+	assert.Nil(c.t, err)
+	if !bytes.Contains(b, subslice) {
+		assert.Fail(c.t, fmt.Sprintf("%#v does not contain %#v", b, subslice))
+	}
+	return c
+}
+
+// NotContainsBody - Will check if body does not contain provided [] byte data
+func (c *Checker) NotContainsBody(subslice []byte) *Checker {
+	b, err := ioutil.ReadAll(c.response.Body)
+
+	assert.Nil(c.t, err)
+	if bytes.Contains(b, subslice) {
+		assert.Fail(c.t, fmt.Sprintf("%#v contains %#v", b, subslice))
+	}
 	return c
 }
 
@@ -270,7 +293,34 @@ func (c *Checker) WithString(body string) *Checker {
 // HasString - Convenience wrapper for HasBody
 // Checks if body is equal to the given string
 func (c *Checker) HasString(body string) *Checker {
-	return c.HasBody([]byte(body))
+	responseBody, err := ioutil.ReadAll(c.response.Body)
+
+	assert.Nil(c.t, err)
+	assert.Equal(c.t, body, string(responseBody))
+
+	return c
+}
+
+// ContainsString - Convenience wrapper for ContainsBody
+// Checks if body contains the given string
+func (c *Checker) ContainsString(substr string) *Checker {
+	responseBody, err := ioutil.ReadAll(c.response.Body)
+
+	assert.Nil(c.t, err)
+	assert.Contains(c.t, string(responseBody), substr)
+
+	return c
+}
+
+// NotContainsString - Convenience wrapper for ContainsBody
+// Checks if body does not contain the given string
+func (c *Checker) NotContainsString(substr string) *Checker {
+	responseBody, err := ioutil.ReadAll(c.response.Body)
+
+	assert.Nil(c.t, err)
+	assert.NotContains(c.t, string(responseBody), substr)
+
+	return c
 }
 
 // Check - Will make request to built request object.
