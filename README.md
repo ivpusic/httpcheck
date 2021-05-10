@@ -17,7 +17,7 @@ go get github.com/ikawaha/httpcheck
 ```
 
 ## API Documentation
-[godoc](https://godoc.org/github.com/ikawaha/httpcheck)
+[GoDoc](https://godoc.org/github.com/ikawaha/httpcheck)
 
 ## How to use?
 
