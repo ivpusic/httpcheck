@@ -90,7 +90,7 @@ func (c *Checker) stop() {
 // make request /////////////////////////////////////////////////
 
 // TestRequest - If you want to provide you custom http.Request instance, you can do it using this method
-// In this case internal http.Request instance won't be created, and passed instane will be used
+// In this case internal http.Request instance won't be created, and passed instance will be used
 // for making request
 func (c *checker) TestRequest(t *testing.T, request *http.Request) *Checker {
 	assert.NotNil(t, request, "Request nil")
@@ -174,7 +174,7 @@ func (c *Checker) WithCookie(key, value string) *Checker {
 
 // status ////////////////////////////////////////////////////////
 
-// HasStatus - Will ckeck if response status is equal to provided
+// HasStatus - Will check if response status is equal to provided
 func (c *Checker) HasStatus(status int) *Checker {
 	assert.Exactly(c.t, status, c.response.StatusCode)
 	return c
