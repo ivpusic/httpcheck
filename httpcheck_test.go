@@ -256,6 +256,52 @@ func TestHasBody(t *testing.T) {
 		HasBody([]byte("hello world"))
 }
 
+func TestHasString(t *testing.T) {
+	mockT := new(testing.T)
+	checker := makeTestChecker()
+	checker.Test(mockT, "GET", "/byte").
+		Check().
+		HasString("hello world")
+}
+
+func TestContainsBody(t *testing.T) {
+	mockT := new(testing.T)
+	checker := makeTestChecker()
+	checker.Test(mockT, "GET", "/byte").
+		Check().
+		ContainsBody([]byte("llo"))
+	assert.False(t, mockT.Failed())
+}
+
+func TestNotContainsBody(t *testing.T) {
+	mockT := new(testing.T)
+	checker := makeTestChecker()
+	checker.Test(mockT, "GET", "/byte").
+		Check().
+		NotContainsBody([]byte("aloha"))
+	assert.False(t, mockT.Failed())
+}
+
+func TestContainsString(t *testing.T) {
+	mockT := new(testing.T)
+	mockT = t
+	checker := makeTestChecker()
+	checker.Test(mockT, "GET", "/byte").
+		Check().
+		ContainsString("llo")
+	assert.False(t, mockT.Failed())
+}
+
+func TestNotContainsString(t *testing.T) {
+	mockT := new(testing.T)
+	mockT = t
+	checker := makeTestChecker()
+	checker.Test(mockT, "GET", "/byte").
+		Check().
+		NotContainsString("aloha")
+	assert.False(t, mockT.Failed())
+}
+
 func TestCb(t *testing.T) {
 	mockT := new(testing.T)
 	called := false
