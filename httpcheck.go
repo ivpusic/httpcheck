@@ -47,7 +47,7 @@ func New(handler http.Handler, options ...Option) *checker {
 	jar, _ := cookiejar.New(nil)
 	checker := &checker{
 		client: &http.Client{
-			Timeout: time.Duration(5 * time.Second),
+			Timeout: 5 * time.Second,
 			Jar:     jar,
 		},
 		pcookies: map[string]bool{},
