@@ -333,7 +333,6 @@ func TestNotContainsBody(t *testing.T) {
 
 func TestContainsString(t *testing.T) {
 	mockT := new(testing.T)
-	mockT = t
 	checker := makeTestChecker()
 	checker.Test(mockT, "GET", "/byte").
 		Check().
@@ -344,7 +343,6 @@ func TestContainsString(t *testing.T) {
 
 func TestNotContainsString(t *testing.T) {
 	mockT := new(testing.T)
-	mockT = t
 	checker := makeTestChecker()
 	checker.Test(mockT, "GET", "/byte").
 		Check().
