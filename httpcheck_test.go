@@ -269,6 +269,7 @@ func TestContainsBody(t *testing.T) {
 	checker := makeTestChecker()
 	checker.Test(mockT, "GET", "/byte").
 		Check().
+		ContainsBody([]byte("llo")).
 		ContainsBody([]byte("llo"))
 	assert.False(t, mockT.Failed())
 }
@@ -288,6 +289,7 @@ func TestContainsString(t *testing.T) {
 	checker := makeTestChecker()
 	checker.Test(mockT, "GET", "/byte").
 		Check().
+		ContainsString("llo").
 		ContainsString("llo")
 	assert.False(t, mockT.Failed())
 }

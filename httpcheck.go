@@ -196,13 +196,15 @@ func (c *Checker) WithJson(value interface{}) *Checker {
 
 // HasJSON - Will check if body contains json with provided value
 func (c *Checker) HasJSON(value interface{}) *Checker {
-	body, err := ioutil.ReadAll(c.response.Body)
+	b, err := ioutil.ReadAll(c.response.Body)
 	assert.Nil(c.t, err)
+	c.response.Body.Close()
 
 	valueBytes, err := json.Marshal(value)
 	assert.Nil(c.t, err)
-	assert.Equal(c.t, string(valueBytes), string(body))
+	assert.Equal(c.t, string(valueBytes), string(b))
 
+	c.response.Body = newClosingBuffer(b)
 	return c
 }
 
@@ -227,13 +229,15 @@ func (c *Checker) WithXml(value interface{}) *Checker {
 
 // HasXML - Will check if body contains xml with provided value
 func (c *Checker) HasXML(value interface{}) *Checker {
-	body, err := ioutil.ReadAll(c.response.Body)
+	b, err := ioutil.ReadAll(c.response.Body)
 	assert.Nil(c.t, err)
+	c.response.Body.Close()
 
 	valueBytes, err := xml.Marshal(value)
 	assert.Nil(c.t, err)
-	assert.Equal(c.t, string(valueBytes), string(body))
+	assert.Equal(c.t, string(valueBytes), string(b))
 
+	c.response.Body = newClosingBuffer(b)
 	return c
 }
 
@@ -253,33 +257,40 @@ func (c *Checker) WithBody(body []byte) *Checker {
 
 // HasBody - Will check if body is equal to provided []byte data
 func (c *Checker) HasBody(body []byte) *Checker {
-	responseBody, err := ioutil.ReadAll(c.response.Body)
-
+	b, err := ioutil.ReadAll(c.response.Body)
 	assert.Nil(c.t, err)
-	assert.Equal(c.t, body, responseBody)
+	c.response.Body.Close()
+	assert.Equal(c.t, body, b)
 
+	c.response.Body = newClosingBuffer(b)
 	return c
 }
 
 // ContainsBody - Will check if body contains provided [] byte data
 func (c *Checker) ContainsBody(subslice []byte) *Checker {
 	b, err := ioutil.ReadAll(c.response.Body)
-
 	assert.Nil(c.t, err)
+	c.response.Body.Close()
+
 	if !bytes.Contains(b, subslice) {
 		assert.Fail(c.t, fmt.Sprintf("%#v does not contain %#v", b, subslice))
 	}
+
+	c.response.Body = newClosingBuffer(b)
 	return c
 }
 
 // NotContainsBody - Will check if body does not contain provided [] byte data
 func (c *Checker) NotContainsBody(subslice []byte) *Checker {
 	b, err := ioutil.ReadAll(c.response.Body)
-
 	assert.Nil(c.t, err)
+	c.response.Body.Close()
+
 	if bytes.Contains(b, subslice) {
 		assert.Fail(c.t, fmt.Sprintf("%#v contains %#v", b, subslice))
 	}
+
+	c.response.Body = newClosingBuffer(b)
 	return c
 }
 
@@ -293,33 +304,37 @@ func (c *Checker) WithString(body string) *Checker {
 // HasString - Convenience wrapper for HasBody
 // Checks if body is equal to the given string
 func (c *Checker) HasString(body string) *Checker {
-	responseBody, err := ioutil.ReadAll(c.response.Body)
-
+	b, err := ioutil.ReadAll(c.response.Body)
 	assert.Nil(c.t, err)
-	assert.Equal(c.t, body, string(responseBody))
+	c.response.Body.Close()
+	assert.Equal(c.t, body, string(b))
 
+	c.response.Body = newClosingBuffer(b)
 	return c
 }
 
 // ContainsString - Convenience wrapper for ContainsBody
 // Checks if body contains the given string
 func (c *Checker) ContainsString(substr string) *Checker {
-	responseBody, err := ioutil.ReadAll(c.response.Body)
-
+	b, err := ioutil.ReadAll(c.response.Body)
 	assert.Nil(c.t, err)
-	assert.Contains(c.t, string(responseBody), substr)
+	c.response.Body.Close()
 
+	assert.Contains(c.t, string(b), substr)
+
+	c.response.Body = newClosingBuffer(b)
 	return c
 }
 
 // NotContainsString - Convenience wrapper for ContainsBody
 // Checks if body does not contain the given string
 func (c *Checker) NotContainsString(substr string) *Checker {
-	responseBody, err := ioutil.ReadAll(c.response.Body)
-
+	b, err := ioutil.ReadAll(c.response.Body)
 	assert.Nil(c.t, err)
-	assert.NotContains(c.t, string(responseBody), substr)
 
+	assert.NotContains(c.t, string(b), substr)
+
+	c.response.Body = newClosingBuffer(b)
 	return c
 }
 
