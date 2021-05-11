@@ -30,3 +30,5 @@ linters:
 linters-settings:
   gocyclo:
     min-complexity: 15
+  errcheck:
+    ignore: Write|Close,fmt:.*,io/ioutil:^Read.*

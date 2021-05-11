@@ -32,7 +32,6 @@ func (t *testHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			Name: "Some",
 			Age:  30,
 		})
-
 		if err != nil {
 			panic(err)
 		}
@@ -45,7 +44,6 @@ func (t *testHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			Name: "Some",
 			Age:  30,
 		})
-
 		if err != nil {
 			panic(err)
 		}
@@ -71,7 +69,7 @@ func (t *testHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func makeTestChecker() *checker {
+func makeTestChecker() *Checker {
 	return New(&testHandler{})
 }
 
@@ -150,8 +148,8 @@ func TestWithCookie(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, cookie.Value, "value")
 
-	cookie, err = checker.request.Cookie("unknown")
-	assert.NotNil(t, err)
+	_, err = checker.request.Cookie("unknown")
+	assert.Error(t, err)
 }
 
 func TestCheck(t *testing.T) {
