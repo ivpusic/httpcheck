@@ -152,7 +152,7 @@ func (tt *Tester) HasStatus(status int) *Tester {
 // WithJSON adds a json encoded struct to the body.
 func (tt *Tester) WithJSON(value interface{}) *Tester {
 	encoded, err := json.Marshal(value)
-	assert.Nil(tt.t, err)
+	assert.NoError(tt.t, err)
 	return tt.WithBody(encoded)
 }
 
@@ -165,11 +165,11 @@ func (tt *Tester) WithJson(value interface{}) *Tester {
 // HasJSON checks if the response body contains json with provided value.
 func (tt *Tester) HasJSON(value interface{}) *Tester {
 	b, err := ioutil.ReadAll(tt.response.Body)
-	assert.Nil(tt.t, err)
+	assert.NoError(tt.t, err)
 	tt.response.Body.Close()
 
 	valueBytes, err := json.Marshal(value)
-	assert.Nil(tt.t, err)
+	assert.NoError(tt.t, err)
 	assert.Equal(tt.t, string(valueBytes), string(b))
 
 	tt.response.Body = ioutil.NopCloser(bytes.NewReader(b))
@@ -187,7 +187,7 @@ func (tt *Tester) HasJson(value interface{}) *Tester {
 // WithXML adds a xml encoded body to the request.
 func (tt *Tester) WithXML(value interface{}) *Tester {
 	encoded, err := xml.Marshal(value)
-	assert.Nil(tt.t, err)
+	assert.NoError(tt.t, err)
 	return tt.WithBody(encoded)
 }
 
@@ -200,11 +200,11 @@ func (tt *Tester) WithXml(value interface{}) *Tester {
 // HasXML checks if body contains xml with provided value.
 func (tt *Tester) HasXML(value interface{}) *Tester {
 	b, err := ioutil.ReadAll(tt.response.Body)
-	assert.Nil(tt.t, err)
+	assert.NoError(tt.t, err)
 	tt.response.Body.Close()
 
 	valueBytes, err := xml.Marshal(value)
-	assert.Nil(tt.t, err)
+	assert.NoError(tt.t, err)
 	assert.Equal(tt.t, string(valueBytes), string(b))
 
 	tt.response.Body = ioutil.NopCloser(bytes.NewReader(b))
@@ -229,7 +229,7 @@ func (tt *Tester) WithBody(body []byte) *Tester {
 // HasBody checks if the body is equal to provided []byte data.
 func (tt *Tester) HasBody(body []byte) *Tester {
 	b, err := ioutil.ReadAll(tt.response.Body)
-	assert.Nil(tt.t, err)
+	assert.NoError(tt.t, err)
 	tt.response.Body.Close()
 	assert.Equal(tt.t, body, b)
 
@@ -240,7 +240,7 @@ func (tt *Tester) HasBody(body []byte) *Tester {
 // ContainsBody checks if the body contains provided [] byte data.
 func (tt *Tester) ContainsBody(segment []byte) *Tester {
 	b, err := ioutil.ReadAll(tt.response.Body)
-	assert.Nil(tt.t, err)
+	assert.NoError(tt.t, err)
 	tt.response.Body.Close()
 
 	if !bytes.Contains(b, segment) {
@@ -254,7 +254,7 @@ func (tt *Tester) ContainsBody(segment []byte) *Tester {
 // NotContainsBody checks if the body does not contain provided [] byte data.
 func (tt *Tester) NotContainsBody(segment []byte) *Tester {
 	b, err := ioutil.ReadAll(tt.response.Body)
-	assert.Nil(tt.t, err)
+	assert.NoError(tt.t, err)
 	tt.response.Body.Close()
 
 	if bytes.Contains(b, segment) {
@@ -275,7 +275,7 @@ func (tt *Tester) WithString(body string) *Tester {
 // HasString converts the response to a string type and then compares it with the given string.
 func (tt *Tester) HasString(body string) *Tester {
 	b, err := ioutil.ReadAll(tt.response.Body)
-	assert.Nil(tt.t, err)
+	assert.NoError(tt.t, err)
 	tt.response.Body.Close()
 	assert.Equal(tt.t, body, string(b))
 
@@ -286,7 +286,7 @@ func (tt *Tester) HasString(body string) *Tester {
 // ContainsString converts the response to a string type and then checks it containing the given string.
 func (tt *Tester) ContainsString(substr string) *Tester {
 	b, err := ioutil.ReadAll(tt.response.Body)
-	assert.Nil(tt.t, err)
+	assert.NoError(tt.t, err)
 	tt.response.Body.Close()
 
 	assert.Contains(tt.t, string(b), substr)
@@ -299,7 +299,7 @@ func (tt *Tester) ContainsString(substr string) *Tester {
 // contain the given string.
 func (tt *Tester) NotContainsString(substr string) *Tester {
 	b, err := ioutil.ReadAll(tt.response.Body)
-	assert.Nil(tt.t, err)
+	assert.NoError(tt.t, err)
 
 	assert.NotContains(tt.t, string(b), substr)
 
