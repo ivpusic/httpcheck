@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -74,7 +74,7 @@ func (c *Checker) UnpersistCookie(cookie string) {
 // In this case internal http.Request instance won't be created, and passed instance will be used
 // for making request
 func (c *Checker) TestRequest(t *testing.T, request *http.Request) *Tester {
-	assert.NotNil(t, request, "Request nil")
+	require.NotNil(t, request, "request is nil")
 
 	c.request = request
 	return &Tester{
@@ -88,7 +88,7 @@ func (c *Checker) Test(t *testing.T, method, path string) *Tester {
 	method = strings.ToUpper(method)
 	request, err := http.NewRequest(method, c.GetURL()+path, nil)
 
-	assert.Nil(t, err, "Failed to make new request")
+	require.NoError(t, err, "failed to make new request")
 
 	c.request = request
 	return &Tester{

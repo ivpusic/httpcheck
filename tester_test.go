@@ -7,8 +7,10 @@ import (
 	"io/ioutil"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type testPerson struct {
@@ -75,14 +77,21 @@ func makeTestChecker() *Checker {
 
 func TestNew(t *testing.T) {
 	checker := New(&testHandler{})
-	assert.NotNil(t, checker)
+	require.NotNil(t, checker)
+	assert.Equal(t, DefaultClientTimeout, checker.client.Timeout)
+}
+
+func TestClientTimeout(t *testing.T) {
+	timeout := 30 * time.Second
+	checker := New(&testHandler{}, ClientTimeout(timeout))
+	assert.Equal(t, timeout, checker.client.Timeout)
 }
 
 func TestTest(t *testing.T) {
 	checker := makeTestChecker()
 	checker.Test(t, "GET", "/some")
 
-	assert.NotNil(t, checker.request)
+	require.NotNil(t, checker.request)
 	assert.Exactly(t, "GET", checker.request.Method)
 	assert.Exactly(t, "/some", checker.request.URL.Path)
 }
@@ -94,7 +103,7 @@ func TestRequest(t *testing.T) {
 	}
 
 	checker.TestRequest(t, request)
-	assert.NotNil(t, checker.request)
+	require.NotNil(t, checker.request)
 	assert.Exactly(t, "GET", checker.request.Method)
 	assert.Nil(t, checker.request.URL)
 }
@@ -145,7 +154,7 @@ func TestWithCookie(t *testing.T) {
 		WithCookie("key", "value")
 
 	cookie, err := checker.request.Cookie("key")
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, cookie.Value, "value")
 
 	_, err = checker.request.Cookie("unknown")
