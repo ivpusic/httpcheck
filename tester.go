@@ -40,13 +40,18 @@ func (tt *Tester) Check() *Tester {
 	}
 
 	tt.client.Jar = newJar
-	response, err := tt.client.Do(tt.request) //nolint:bodyclose
+	response, err := tt.client.Do(tt.request)
 	if err != nil {
 		assert.FailNow(tt.t, err.Error())
 	}
+	defer response.Body.Close()
 
 	// save response for assertion checks
+	b, err := ioutil.ReadAll(response.Body)
+	assert.NoError(tt.t, err)
+
 	tt.response = response
+	tt.response.Body = ioutil.NopCloser(bytes.NewReader(b))
 	return tt
 }
 

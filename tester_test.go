@@ -37,7 +37,6 @@ func (t *testHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		if err != nil {
 			panic(err)
 		}
-
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(body)
 
@@ -49,7 +48,6 @@ func (t *testHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		if err != nil {
 			panic(err)
 		}
-
 		w.Header().Set("Content-Type", "application/xml")
 		w.Write(body)
 	case "/byte":
@@ -66,13 +64,16 @@ func (t *testHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			Name:  "other",
 			Value: "secondcookie",
 		})
+	case "/redirect":
+		w.Header().Set("Location", "https://localhost/redirect-test")
+		w.WriteHeader(http.StatusTemporaryRedirect)
 	case "/nothing":
 
 	}
 }
 
-func makeTestChecker() *Checker {
-	return New(&testHandler{})
+func makeTestChecker(opts ...Option) *Checker {
+	return New(&testHandler{}, opts...)
 }
 
 func TestNew(t *testing.T) {
@@ -85,6 +86,17 @@ func TestClientTimeout(t *testing.T) {
 	timeout := 30 * time.Second
 	checker := New(&testHandler{}, ClientTimeout(timeout))
 	assert.Equal(t, timeout, checker.client.Timeout)
+}
+
+func TestNoRedirect(t *testing.T) {
+	mockT := new(testing.T)
+	checker := makeTestChecker(NoRedirect())
+	checker.Test(mockT, http.MethodGet, "/redirect").
+		Check().
+		HasStatus(http.StatusTemporaryRedirect)
+
+	assert.Exactly(t, "/redirect", checker.request.URL.Path)
+	assert.False(t, mockT.Failed())
 }
 
 func TestTest(t *testing.T) {

@@ -26,6 +26,27 @@ func ClientTimeout(d time.Duration) Option {
 	}
 }
 
+// CheckRedirect sets the policy of redirection to the HTTP client.
+func CheckRedirect(policy func(req *http.Request, via []*http.Request) error) Option {
+	return func(c *Checker) {
+		c.client.CheckRedirect = policy
+	}
+}
+
+// NoRedirect is the alias of the following:
+//
+//  CheckRedirect(func(req *http.Request, via []*http.Request) error {
+//      return http.ErrUseLastResponse
+//  })
+//
+// Client returns ErrUseLastResponse, the next request is not sent and the most recent
+// response is returned with its body unclosed.
+func NoRedirect() Option {
+	return CheckRedirect(func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
+	})
+}
+
 // Checker represents the HTTP checker without testing.T.
 type Checker struct {
 	client   *http.Client
