@@ -160,6 +160,15 @@ func TestWithBasicAuth(t *testing.T) {
 	assert.Equal(t, checker.request.Header.Get("Authorization"), "Basic "+h)
 }
 
+func TestWithBearerAuth(t *testing.T) {
+	checker := makeTestChecker()
+	checker.Test(t, "GET", "/some").
+		WithBearerAuth("token")
+
+	v := checker.request.Header.Get("Authorization")
+	assert.Equal(t, "Bearer: token", v)
+}
+
 func TestWithCookie(t *testing.T) {
 	checker := makeTestChecker()
 	checker.Test(t, "GET", "/some").
