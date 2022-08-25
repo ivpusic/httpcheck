@@ -186,7 +186,7 @@ func (tt *Tester) HasJSON(value interface{}) *Tester {
 
 	valueBytes, err := json.Marshal(value)
 	assert.NoError(tt.t, err)
-	assert.Equal(tt.t, string(valueBytes), string(b))
+	assert.JSONEq(tt.t, string(valueBytes), string(b))
 
 	tt.response.Body = ioutil.NopCloser(bytes.NewReader(b))
 	return tt
