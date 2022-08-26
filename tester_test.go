@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"encoding/xml"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
 	"time"
@@ -53,7 +53,7 @@ func (t *testHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	case "/byte":
 		w.Write([]byte("hello world"))
 	case "/mirrorbody":
-		body, _ := ioutil.ReadAll(req.Body)
+		body, _ := io.ReadAll(req.Body)
 		w.Write(body)
 	case "/cookies":
 		http.SetCookie(w, &http.Cookie{

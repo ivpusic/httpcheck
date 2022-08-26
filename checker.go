@@ -35,9 +35,9 @@ func CheckRedirect(policy func(req *http.Request, via []*http.Request) error) Op
 
 // NoRedirect is the alias of the following:
 //
-//  CheckRedirect(func(req *http.Request, via []*http.Request) error {
-//      return http.ErrUseLastResponse
-//  })
+//	CheckRedirect(func(req *http.Request, via []*http.Request) error {
+//	    return http.ErrUseLastResponse
+//	})
 //
 // Client returns ErrUseLastResponse, the next request is not sent and the most recent
 // response is returned with its body unclosed.
@@ -57,7 +57,7 @@ type Checker struct {
 	handler  http.Handler
 }
 
-// New creates a HTTP Checker.
+// New creates an HTTP Checker.
 func New(h http.Handler, options ...Option) *Checker {
 	jar, _ := cookiejar.New(nil)
 	ret := &Checker{
