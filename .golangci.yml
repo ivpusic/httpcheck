@@ -1,18 +1,10 @@
 run:
 
-issues:
-  exclude-use-default: false
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - gocyclo
-
 linters:
   enable:
     - gocyclo
     - staticcheck
     - govet
-    - golint
   disable:
     - maligned
     - exhaustive
@@ -22,13 +14,14 @@ linters:
     - rowserrcheck
     - gosec
     - scopelint
+    - structcheck
+    - deadcode
+    - varcheck
   presets:
     - bugs
     - unused
     - format
 
 linters-settings:
-  gocyclo:
-    min-complexity: 15
   errcheck:
-    ignore: Write|Close,fmt:.*,io/ioutil:^Read.*
+    ignore: Write|Close,fmt:.*,io:^Read.*
