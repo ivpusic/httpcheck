@@ -17,7 +17,7 @@ import (
 
 type (
 	Checker struct {
-		t        *testing.T
+		tb        testing.TB
 		client   *http.Client
 		request  *http.Request
 		response *http.Response
@@ -33,12 +33,12 @@ var (
 	logger = golog.GetLogger("github.com/ivpusic/httpcheck")
 )
 
-func New(t *testing.T, handler http.Handler) *Checker {
+func New(tb testing.TB, handler http.Handler) *Checker {
 	logger.Level = golog.INFO
 
 	jar, _ := cookiejar.New(nil)
 	instance := &Checker{
-		t: t,
+		t: tb,
 		client: &http.Client{
 			Timeout: time.Duration(5 * time.Second),
 			Jar:     jar,
@@ -78,9 +78,9 @@ func (c *Checker) stop() {
 	c.server = createServer(c.handler)
 }
 
-func (c *Checker) SetTesting(t *testing.T) *Checker {
+func (c *Checker) SetTesting(tb testing.TB) *Checker {
 	if t == nil {
-		panic("testing.T is nil")
+		panic("testing.TB is nil")
 	}
 
 	c.t = t
