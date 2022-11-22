@@ -5,15 +5,20 @@ import (
 	"io"
 	"net/http"
 	"net/http/cookiejar"
-	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-// Tester represents the HTTP tester having testing.T.
+// TestingT is an interface wrapper around *testing.T.
+type TestingT interface {
+	Errorf(format string, args ...any)
+	FailNow()
+}
+
+// Tester represents the HTTP tester having TestingT.
 type Tester struct {
-	t *testing.T
+	t TestingT
 	*Checker
 }
 
