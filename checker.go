@@ -5,7 +5,6 @@ import (
 	"net/http/cookiejar"
 	"net/http/httptest"
 	"strings"
-	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
@@ -47,7 +46,7 @@ func NoRedirect() Option {
 	})
 }
 
-// Checker represents the HTTP checker without testing.T.
+// Checker represents the HTTP checker without TestingT.
 type Checker struct {
 	client   *http.Client
 	request  *http.Request
@@ -94,7 +93,7 @@ func (c *Checker) UnpersistCookie(cookie string) {
 // TestRequest - If you want to provide you custom http.Request instance, you can do it using this method
 // In this case internal http.Request instance won't be created, and passed instance will be used
 // for making request
-func (c *Checker) TestRequest(t *testing.T, request *http.Request) *Tester {
+func (c *Checker) TestRequest(t TestingT, request *http.Request) *Tester {
 	require.NotNil(t, request, "request is nil")
 
 	c.request = request
@@ -105,7 +104,7 @@ func (c *Checker) TestRequest(t *testing.T, request *http.Request) *Tester {
 }
 
 // Test - Prepare for testing some part of code which lives on provided path and method.
-func (c *Checker) Test(t *testing.T, method, path string) *Tester {
+func (c *Checker) Test(t TestingT, method, path string) *Tester {
 	method = strings.ToUpper(method)
 	request, err := http.NewRequest(method, c.GetURL()+path, nil)
 
