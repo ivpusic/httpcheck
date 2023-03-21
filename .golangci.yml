@@ -17,6 +17,7 @@ linters:
     - structcheck
     - deadcode
     - varcheck
+    - musttag
   presets:
     - bugs
     - unused
