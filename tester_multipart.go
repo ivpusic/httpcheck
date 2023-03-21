@@ -1,42 +1,67 @@
 package httpcheck
 
-import "fmt"
+import (
+	"bytes"
+	"fmt"
+	"mime/multipart"
+	"os"
 
-type FormData struct {
-	Key   string
-	Value string
-	// Option
-	FileName string
+	"github.com/stretchr/testify/require"
+)
+
+// Parter is the interface that create a multipart part.
+type Parter interface {
+	Part(mw *multipart.Writer) error
 }
 
-// String to string
-//
-// --HTTPCheckerBoundery
-// Content-Disposition: form-data; name="${Key}"
-//
-// ${Value}
-func (f FormData) String() string {
-	options := ""
-	if len(f.FileName) > 0 {
-		options = fmt.Sprintf("filename=\"%s\"\nContent-Type: text/csv", f.FileName)
-	}
-	return fmt.Sprintf(`--HTTPCheckBoundary
-	Content-Disposition: form-data; name="%s"; %s
-	
-	%s
-	`, f.Key, options, f.Value)
+// FieldPart represents a multipart part of the field type part.
+type FieldPart struct {
+	FieldName string
+	Value     string
 }
 
-func (tt *Tester) WithMultipart(items ...FormData) *Tester {
-	tt.WithHeader(
-		"Content-Type",
-		"multipart/form-data; boundary=HTTPCheckBoundary",
-	)
-	payload := ""
-	for _, item := range items {
-		payload += item.String()
+// Part returns a multipart part.
+func (p FieldPart) Part(mw *multipart.Writer) error {
+	w, err := mw.CreateFormField(p.FieldName)
+	if err != nil {
+		return fmt.Errorf("failed to creat form field: %w", err)
 	}
-	payload += "--HTTPCheckBoundary--"
-	print(payload)
-	return tt.WithBody([]byte(payload))
+	if _, err := w.Write([]byte(p.Value)); err != nil {
+		return fmt.Errorf("write error: %w", err)
+	}
+	return nil
+}
+
+// FilePart represents a multipart part of the file type part.
+type FilePart struct {
+	FieldName string
+	FileName  string
+}
+
+// Part returns a multipart part.
+func (p FilePart) Part(mw *multipart.Writer) error {
+	w, err := mw.CreateFormFile(p.FieldName, p.FileName)
+	if err != nil {
+		return fmt.Errorf("failed to create form file: %w", err)
+	}
+	b, err := os.ReadFile(p.FileName)
+	if err != nil {
+		return fmt.Errorf("failed to open file: %w", err)
+	}
+	if _, err := w.Write(b); err != nil {
+		return fmt.Errorf("failed to write: %w", err)
+	}
+	return nil
+}
+
+// WithMultipart add a multipart data to the body.
+func (tt *Tester) WithMultipart(part Parter, parts ...Parter) *Tester {
+	var b bytes.Buffer
+	mw := multipart.NewWriter(&b)
+	require.NoError(tt.t, part.Part(mw))
+	for _, v := range parts {
+		require.NoError(tt.t, v.Part(mw))
+	}
+	require.NoError(tt.t, mw.Close())
+	return tt.WithHeader("Content-Type", mw.FormDataContentType()).WithBody(b.Bytes())
 }
