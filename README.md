@@ -1,5 +1,5 @@
-[![Build Status](https://travis-ci.org/ikawaha/httpcheck.svg?branch=master)](https://travis-ci.org/ikawaha/httpcheck)
-
+[![Go](https://github.com/ikawaha/httpcheck/actions/workflows/test.yml/badge.svg)](https://github.com/ikawaha/httpcheck/actions/workflows/test.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/ikawaha/httpcheck.svg)](https://pkg.go.dev/github.com/ikawaha/httpcheck)
 # httpcheck
 
 [supertest](https://github.com/visionmedia/supertest) inspired library for testing HTTP servers.
@@ -17,7 +17,7 @@ go get github.com/ikawaha/httpcheck
 ```
 
 ## API Documentation
-[GoDoc](https://godoc.org/github.com/ikawaha/httpcheck)
+[![Go Reference](https://pkg.go.dev/badge/github.com/ikawaha/httpcheck.svg)](https://pkg.go.dev/github.com/ikawaha/httpcheck)
 
 ## How to use?
 
